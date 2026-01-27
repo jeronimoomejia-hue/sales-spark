@@ -2,14 +2,37 @@ import { motion } from "framer-motion";
 import { Search, Bell, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { EventSelector } from "@/components/ui/event-selector";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 
 interface HeaderProps {
   title: string;
   subtitle?: string;
   showEventSelector?: boolean;
+  selectedEventId?: string | 'all';
+  onEventChange?: (eventId: string | 'all') => void;
 }
 
-export function Header({ title, subtitle, showEventSelector = true }: HeaderProps) {
+const notifications = [
+  { id: 1, title: "Nueva venta registrada", message: "Ticket VIP - Neon Festival", time: "Hace 5 min", read: false },
+  { id: 2, title: "Hito casi completado", message: "Te faltan 5 tickets para el sorteo", time: "Hace 1 hora", read: false },
+  { id: 3, title: "Cierre aprobado", message: "Tu cierre del período anterior fue aprobado", time: "Hace 2 horas", read: true },
+];
+
+export function Header({ 
+  title, 
+  subtitle, 
+  showEventSelector = true,
+  selectedEventId = 'all',
+  onEventChange 
+}: HeaderProps) {
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -32,21 +55,58 @@ export function Header({ title, subtitle, showEventSelector = true }: HeaderProp
         </div>
 
         {/* Event Selector */}
-        {showEventSelector && (
-          <Button variant="outline" className="gap-2 hidden sm:flex">
-            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            <span>Neon Festival</span>
-            <ChevronDown className="w-4 h-4" />
-          </Button>
+        {showEventSelector && onEventChange && (
+          <EventSelector
+            selectedEventId={selectedEventId}
+            onEventChange={onEventChange}
+          />
         )}
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-            3
-          </span>
-        </Button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-0 bg-card border-border" align="end">
+            <div className="p-3 border-b border-border flex items-center justify-between">
+              <h4 className="font-semibold">Notificaciones</h4>
+              <Badge variant="secondary">{unreadCount} nuevas</Badge>
+            </div>
+            <div className="max-h-[300px] overflow-y-auto">
+              {notifications.map((notif) => (
+                <div 
+                  key={notif.id}
+                  className={`p-3 border-b border-border/50 hover:bg-card-elevated transition-colors cursor-pointer ${
+                    !notif.read ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {!notif.read && (
+                      <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{notif.title}</p>
+                      <p className="text-sm text-muted-foreground truncate">{notif.message}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{notif.time}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="p-2 border-t border-border">
+              <Button variant="ghost" className="w-full" size="sm">
+                Ver todas las notificaciones
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {/* User Avatar */}
         <div className="flex items-center gap-3">

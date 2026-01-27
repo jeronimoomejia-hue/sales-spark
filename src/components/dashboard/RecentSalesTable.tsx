@@ -3,17 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TicketIcon, Download, ChevronRight } from "lucide-react";
+import { TicketIcon, Download, ChevronRight, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Sale {
-  id: string;
-  date: string;
-  event: string;
-  ticketType: "general" | "vip" | "palco";
-  price: number;
-  commission: number;
-}
+import { salesData } from "@/data/mockData";
 
 const ticketTypeBadgeStyles = {
   general: "bg-neon-blue/10 text-neon-blue border-neon-blue/30",
@@ -28,8 +20,9 @@ const ticketTypeLabels = {
 };
 
 interface RecentSalesTableProps {
-  sales: Sale[];
   totalSales: number;
+  filterEventId?: string | 'all';
+  onSeeMore?: () => void;
 }
 
 function formatCurrency(value: number) {
@@ -40,7 +33,14 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-export function RecentSalesTable({ sales, totalSales }: RecentSalesTableProps) {
+export function RecentSalesTable({ totalSales, filterEventId = 'all', onSeeMore }: RecentSalesTableProps) {
+  // Filter sales by event if specified
+  const filteredSales = filterEventId === 'all' 
+    ? salesData 
+    : salesData.filter(sale => sale.eventId === filterEventId);
+
+  const displaySales = filteredSales.slice(0, 5);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -53,10 +53,18 @@ export function RecentSalesTable({ sales, totalSales }: RecentSalesTableProps) {
             <TicketIcon className="w-5 h-5 text-primary" />
             Mis Ventas Recientes
           </CardTitle>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Download className="w-4 h-4" />
-            Descargar Cierre
-          </Button>
+          <div className="flex gap-2">
+            {onSeeMore && (
+              <Button variant="ghost" size="sm" className="gap-1" onClick={onSeeMore}>
+                <Eye className="w-4 h-4" />
+                Ver más
+              </Button>
+            )}
+            <Button variant="outline" size="sm" className="gap-2">
+              <Download className="w-4 h-4" />
+              Descargar Cierre
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -67,21 +75,23 @@ export function RecentSalesTable({ sales, totalSales }: RecentSalesTableProps) {
                 <TableHead className="text-muted-foreground">Tipo</TableHead>
                 <TableHead className="text-muted-foreground text-right">Precio</TableHead>
                 <TableHead className="text-muted-foreground text-right">Comisión</TableHead>
+                <TableHead className="text-muted-foreground">Estado</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sales.map((sale, index) => (
+              {displaySales.map((sale, index) => (
                 <motion.tr
                   key={sale.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.2, delay: 0.5 + index * 0.05 }}
-                  className="border-border hover:bg-card-elevated transition-colors"
+                  className="border-border hover:bg-card-elevated transition-colors cursor-pointer"
+                  onClick={onSeeMore}
                 >
                   <TableCell className="font-mono text-sm text-muted-foreground">
                     {sale.date}
                   </TableCell>
-                  <TableCell className="font-medium">{sale.event}</TableCell>
+                  <TableCell className="font-medium">{sale.eventName}</TableCell>
                   <TableCell>
                     <Badge
                       variant="outline"
@@ -99,15 +109,20 @@ export function RecentSalesTable({ sales, totalSales }: RecentSalesTableProps) {
                   <TableCell className="text-right font-mono text-success font-medium">
                     {formatCurrency(sale.commission)}
                   </TableCell>
+                  <TableCell>
+                    <Badge variant={sale.status === 'confirmed' ? 'success' : 'warning'}>
+                      {sale.status === 'confirmed' ? 'Confirmada' : 'Pendiente'}
+                    </Badge>
+                  </TableCell>
                 </motion.tr>
               ))}
             </TableBody>
           </Table>
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
             <span className="text-sm text-muted-foreground">
-              Mostrando {sales.length} de {totalSales} ventas
+              Mostrando {displaySales.length} de {totalSales} ventas
             </span>
-            <Button variant="ghost" size="sm" className="gap-1 text-primary hover:text-primary">
+            <Button variant="ghost" size="sm" className="gap-1 text-primary hover:text-primary" onClick={onSeeMore}>
               Ver todas
               <ChevronRight className="w-4 h-4" />
             </Button>
