@@ -22,6 +22,9 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <AdminQuickActions />
 
+        {/* Organizational Tree - More Prominent */}
+        <OrganizationalTree />
+
         {/* Charts Row - 2/3 and 1/3 split */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -37,9 +40,6 @@ export default function AdminDashboard() {
           <TopSellersRanking />
           <TeamDistributionChart />
         </div>
-
-        {/* Organizational Tree */}
-        <OrganizationalTree />
       </div>
     </DashboardLayout>
   );
