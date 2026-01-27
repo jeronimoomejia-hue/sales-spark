@@ -16,12 +16,12 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: TicketIcon, label: "Mis Ventas", path: "/ventas" },
-  { icon: Target, label: "Hitos", path: "/hitos" },
-  { icon: Wallet, label: "Cierres", path: "/cierres" },
-  { icon: Users, label: "Mi Equipo", path: "/equipo", levelRequired: 2 },
-  { icon: Settings, label: "Configuración", path: "/configuracion" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", adminPath: "/admin" },
+  { icon: TicketIcon, label: "Mis Ventas", path: "/ventas", levelMax: 3 },
+  { icon: Target, label: "Hitos", path: "/hitos", adminPath: "/admin/milestones" },
+  { icon: Wallet, label: "Cierres", path: "/cierres", adminPath: "/admin/closures" },
+  { icon: Users, label: "Mi Equipo", path: "/equipo", levelRequired: 2, adminPath: "/admin/users" },
+  { icon: Settings, label: "Configuración", path: "/configuracion", adminPath: "/admin/settings" },
 ];
 
 interface SidebarProps {
@@ -32,8 +32,14 @@ export function Sidebar({ userLevel = 1 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
 
+  const isAdmin = userLevel === 4;
+  
   const filteredItems = menuItems.filter(
-    (item) => !item.levelRequired || userLevel >= item.levelRequired
+    (item) => {
+      if (item.levelRequired && userLevel < item.levelRequired) return false;
+      if (item.levelMax && userLevel > item.levelMax) return false;
+      return true;
+    }
   );
 
   return (
@@ -79,8 +85,11 @@ export function Sidebar({ userLevel = 1 }: SidebarProps) {
       <div className="p-4 border-b border-sidebar-border">
         <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-gradient-party flex items-center justify-center text-white font-semibold">
-              JP
+            <div className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold",
+              isAdmin ? "bg-gradient-party" : "bg-gradient-party"
+            )}>
+              {isAdmin ? "NA" : "JP"}
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-success rounded-full border-2 border-sidebar pulse-neon" />
           </div>
@@ -92,15 +101,19 @@ export function Sidebar({ userLevel = 1 }: SidebarProps) {
                 exit={{ opacity: 0 }}
                 className="flex-1 min-w-0"
               >
-                <p className="font-medium text-sm truncate text-foreground">Juan Pérez</p>
-                <p className="text-xs text-sidebar-foreground">Promotor Común</p>
+                <p className="font-medium text-sm truncate text-foreground">
+                  {isAdmin ? "NeonEvents Admin" : "Juan Pérez"}
+                </p>
+                <p className="text-xs text-sidebar-foreground">
+                  {isAdmin ? "Socio (Nivel 4)" : "Promotor Común"}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
         
         <AnimatePresence mode="wait">
-          {!collapsed && (
+          {!collapsed && !isAdmin && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -114,19 +127,33 @@ export function Sidebar({ userLevel = 1 }: SidebarProps) {
               <Progress value={38} size="sm" indicatorColor="party" />
             </motion.div>
           )}
+          {!collapsed && isAdmin && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mt-4 p-2 rounded-lg bg-primary/10 border border-primary/20"
+            >
+              <p className="text-xs text-primary font-medium text-center">
+                Panel de Administración
+              </p>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {filteredItems.map((item) => {
-          const isActive = location.pathname === item.path || 
-            (item.path === "/dashboard" && location.pathname === "/");
+          const itemPath = isAdmin && item.adminPath ? item.adminPath : item.path;
+          const isActive = location.pathname === itemPath || 
+            (itemPath === "/dashboard" && location.pathname === "/") ||
+            (itemPath === "/admin" && location.pathname === "/admin/dashboard");
           
           return (
             <NavLink
               key={item.path}
-              to={item.path}
+              to={itemPath}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
                 isActive
