@@ -1,17 +1,17 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
-  LineChart, 
-  Line, 
+  AreaChart,
+  Area,
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  AreaChart,
-  Area
 } from "recharts";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Eye } from "lucide-react";
 
 interface DataPoint {
   name: string;
@@ -21,6 +21,9 @@ interface DataPoint {
 
 interface SalesChartProps {
   data: DataPoint[];
+  title?: string;
+  subtitle?: string;
+  onSeeMore?: () => void;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -42,7 +45,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function SalesChart({ data }: SalesChartProps) {
+export function SalesChart({ 
+  data, 
+  title = "Ventas por Semana",
+  subtitle = "Ciclos de 15 días",
+  onSeeMore 
+}: SalesChartProps) {
+  const [viewMode, setViewMode] = useState<'weekly' | 'daily'>('weekly');
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -51,17 +61,40 @@ export function SalesChart({ data }: SalesChartProps) {
     >
       <Card variant="neon" className="h-full">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            Ventas Últimos 30 Días
-          </CardTitle>
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              {title}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+          </div>
           <div className="flex gap-2">
-            <button className="px-3 py-1 text-sm rounded-lg bg-primary/10 text-primary border border-primary/30">
-              Diario
-            </button>
-            <button className="px-3 py-1 text-sm rounded-lg text-muted-foreground hover:bg-card-elevated transition-colors">
+            <button 
+              className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                viewMode === 'weekly' 
+                  ? 'bg-primary/10 text-primary border border-primary/30' 
+                  : 'text-muted-foreground hover:bg-card-elevated'
+              }`}
+              onClick={() => setViewMode('weekly')}
+            >
               Semanal
             </button>
+            <button 
+              className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                viewMode === 'daily' 
+                  ? 'bg-primary/10 text-primary border border-primary/30' 
+                  : 'text-muted-foreground hover:bg-card-elevated'
+              }`}
+              onClick={() => setViewMode('daily')}
+            >
+              Diario
+            </button>
+            {onSeeMore && (
+              <Button variant="ghost" size="sm" className="gap-1" onClick={onSeeMore}>
+                <Eye className="w-4 h-4" />
+                Ver más
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
