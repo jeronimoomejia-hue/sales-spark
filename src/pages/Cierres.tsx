@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ClosureDetailModal } from "@/components/modals/ClosureDetailModal";
 import { 
   Wallet, 
   Download, 
@@ -11,7 +13,8 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
-  TrendingUp
+  TrendingUp,
+  Eye
 } from "lucide-react";
 
 const currentPeriod = {
@@ -79,13 +82,31 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function Cierres() {
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedClosure, setSelectedClosure] = useState<typeof closureHistory[0] | null>(null);
+  
+  // Get user level from sessionStorage
+  const [userLevel, setUserLevel] = useState<number>(1);
+  
+  useEffect(() => {
+    const storedLevel = sessionStorage.getItem("demoUserLevel");
+    if (storedLevel) {
+      setUserLevel(parseInt(storedLevel));
+    }
+  }, []);
+
   const totalPaid = closureHistory.reduce((sum, c) => sum + c.commission, 0);
+
+  const handleViewClosure = (closure: typeof closureHistory[0]) => {
+    setSelectedClosure(closure);
+    setShowDetailModal(true);
+  };
 
   return (
     <DashboardLayout 
       title="Cierres de Caja" 
       subtitle="Gestión de comisiones y pagos"
-      userLevel={1}
+      userLevel={userLevel}
     >
       <div className="space-y-6">
         {/* Summary Stats */}
@@ -179,12 +200,12 @@ export default function Cierres() {
           </div>
 
           <div className="flex gap-3">
-            <Button variant="party" className="gap-2">
+            <Button variant="party" className="gap-2" onClick={() => setShowDetailModal(true)}>
               <Download className="w-4 h-4" />
               Descargar Reporte PDF
             </Button>
-            <Button variant="outline" className="gap-2">
-              <FileText className="w-4 h-4" />
+            <Button variant="outline" className="gap-2" onClick={() => setShowDetailModal(true)}>
+              <Eye className="w-4 h-4" />
               Ver Detalle
             </Button>
           </div>
@@ -201,7 +222,11 @@ export default function Cierres() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <Card variant="default" className="p-4 hover:border-primary/30 transition-all">
+              <Card 
+                variant="default" 
+                className="p-4 hover:border-primary/30 transition-all cursor-pointer"
+                onClick={() => handleViewClosure(closure)}
+              >
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-4">
                       <div className="p-2 rounded-lg bg-success/20">
@@ -225,9 +250,9 @@ export default function Cierres() {
                         <p className="text-sm">{closure.paidDate}</p>
                       </div>
                       {getStatusBadge(closure.status)}
-                      <Button variant="ghost" size="sm" className="gap-1">
-                        <Download className="w-4 h-4" />
-                        PDF
+                      <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); handleViewClosure(closure); }}>
+                        <Eye className="w-4 h-4" />
+                        Ver más
                       </Button>
                     </div>
                   </div>
@@ -237,6 +262,21 @@ export default function Cierres() {
           </div>
         </div>
       </div>
+
+      {/* Closure Detail Modal */}
+      <ClosureDetailModal
+        open={showDetailModal}
+        onOpenChange={setShowDetailModal}
+        closure={selectedClosure ? {
+          id: selectedClosure.id,
+          period: selectedClosure.period,
+          tickets: selectedClosure.tickets,
+          totalSales: selectedClosure.totalSales,
+          commission: selectedClosure.commission,
+          status: selectedClosure.status as 'pending' | 'approved' | 'paid' | 'disputed',
+          paidDate: selectedClosure.paidDate
+        } : undefined}
+      />
     </DashboardLayout>
   );
 }

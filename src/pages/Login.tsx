@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 
 const demoUsers = [
-  { level: 1, name: "Promotor Común", icon: User, path: "/dashboard", color: "from-blue-500 to-cyan-500" },
-  { level: 2, name: "Promotor Cabeza", icon: Users, path: "/equipo", color: "from-purple-500 to-pink-500" },
-  { level: 3, name: "Sub Socio", icon: Shield, path: "/dashboard", color: "from-orange-500 to-yellow-500" },
-  { level: 4, name: "Socio/Admin", icon: Crown, path: "/admin", color: "from-pink-500 to-red-500" },
+  { level: 1 as const, name: "Promotor Común", description: "Vendedor individual", icon: User, path: "/dashboard", color: "from-neon-blue to-cyan-500" },
+  { level: 2 as const, name: "Promotor Cabeza", description: "Lidera equipo de 6 personas", icon: Users, path: "/dashboard", color: "from-neon-purple to-neon-pink" },
+  { level: 3 as const, name: "Sub Socio", description: "Gestiona 3 cabezas + 15 promotores", icon: Shield, path: "/dashboard", color: "from-neon-orange to-yellow-500" },
+  { level: 4 as const, name: "Socio/Admin", description: "Vista completa de la organización", icon: Crown, path: "/admin", color: "from-neon-pink to-red-500" },
 ];
 
 export default function Login() {
@@ -26,10 +26,12 @@ export default function Login() {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsLoading(false);
+    sessionStorage.setItem("demoUserLevel", "1");
     navigate("/dashboard");
   };
 
-  const handleDemoLogin = (path: string) => {
+  const handleDemoLogin = (level: 1 | 2 | 3 | 4, path: string) => {
+    sessionStorage.setItem("demoUserLevel", level.toString());
     navigate(path);
   };
 
@@ -159,17 +161,21 @@ export default function Login() {
                   transition={{ delay: index * 0.1 }}
                 >
                   <button
-                    onClick={() => handleDemoLogin(user.path)}
-                    className={`w-full p-4 rounded-xl bg-gradient-to-r ${user.color} hover:opacity-90 transition-all flex items-center gap-4 text-white`}
+                    onClick={() => handleDemoLogin(user.level, user.path)}
+                    className={`w-full p-4 rounded-xl bg-gradient-to-r ${user.color} hover:opacity-90 hover:scale-[1.02] transition-all flex items-center gap-4 text-white shadow-lg`}
                   >
                     <div className="p-2 rounded-lg bg-white/20">
                       <user.icon className="w-6 h-6" />
                     </div>
-                    <div className="text-left">
+                    <div className="text-left flex-1">
                       <p className="font-semibold">{user.name}</p>
-                      <p className="text-sm opacity-80">Nivel {user.level}</p>
+                      <p className="text-sm opacity-80">{user.description}</p>
                     </div>
-                    <ArrowRight className="w-5 h-5 ml-auto" />
+                    <div className="text-right">
+                      <p className="text-xs opacity-70">Nivel</p>
+                      <p className="text-xl font-bold">{user.level}</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5" />
                   </button>
                 </motion.div>
               ))}

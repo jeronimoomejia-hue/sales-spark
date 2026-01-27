@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { MilestoneDetailModal } from "@/components/modals/MilestoneDetailModal";
 import { 
   Target, 
   Trophy, 
@@ -11,8 +13,8 @@ import {
   Clock, 
   CheckCircle2,
   Flame,
-  Star,
-  Zap
+  Zap,
+  Eye
 } from "lucide-react";
 
 const activeMilestones = [
@@ -94,11 +96,29 @@ const completedMilestones = [
 ];
 
 export default function Hitos() {
+  const [selectedMilestone, setSelectedMilestone] = useState<typeof activeMilestones[0] | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
+  // Get user level from sessionStorage
+  const [userLevel, setUserLevel] = useState<number>(1);
+  
+  useEffect(() => {
+    const storedLevel = sessionStorage.getItem("demoUserLevel");
+    if (storedLevel) {
+      setUserLevel(parseInt(storedLevel));
+    }
+  }, []);
+
+  const handleViewMilestone = (milestone: typeof activeMilestones[0]) => {
+    setSelectedMilestone(milestone);
+    setShowDetailModal(true);
+  };
+
   return (
     <DashboardLayout 
       title="Hitos y Recompensas" 
       subtitle="Tu progreso hacia las metas"
-      userLevel={1}
+      userLevel={userLevel}
     >
       <div className="space-y-6">
         {/* Summary Stats */}
@@ -163,7 +183,7 @@ export default function Hitos() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <Card variant="glass" className="p-5 hover:border-primary/30 transition-all">
+                <Card variant="glass" className="p-5 hover:border-primary/30 transition-all cursor-pointer" onClick={() => handleViewMilestone(milestone)}>
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <span className="text-3xl">{milestone.icon}</span>
@@ -196,9 +216,15 @@ export default function Hitos() {
                         <Gift className="w-4 h-4 text-warning" />
                         <span className="text-muted-foreground">{milestone.reward}</span>
                       </div>
-                      {milestone.progress >= milestone.target && (
-                        <Button variant="party" size="sm">Reclamar</Button>
-                      )}
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); handleViewMilestone(milestone); }}>
+                          <Eye className="w-3 h-3" />
+                          Ver más
+                        </Button>
+                        {milestone.progress >= milestone.target && (
+                          <Button variant="party" size="sm" onClick={(e) => e.stopPropagation()}>Reclamar</Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -250,6 +276,24 @@ export default function Hitos() {
           </div>
         </div>
       </div>
+
+      {/* Milestone Detail Modal */}
+      <MilestoneDetailModal
+        open={showDetailModal}
+        onOpenChange={setShowDetailModal}
+        milestone={selectedMilestone ? {
+          id: selectedMilestone.id,
+          name: selectedMilestone.name,
+          description: selectedMilestone.description,
+          icon: selectedMilestone.icon,
+          progress: selectedMilestone.progress,
+          target: selectedMilestone.target,
+          reward: selectedMilestone.reward,
+          rewardType: selectedMilestone.rewardType,
+          daysLeft: selectedMilestone.daysLeft,
+          color: selectedMilestone.color
+        } : undefined}
+      />
     </DashboardLayout>
   );
 }

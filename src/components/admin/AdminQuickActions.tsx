@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { 
@@ -19,6 +20,8 @@ const actions = [
 ];
 
 export function AdminQuickActions() {
+  const navigate = useNavigate();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -31,6 +34,7 @@ export function AdminQuickActions() {
           key={action.label}
           variant="outline"
           className="gap-2 bg-card hover:bg-card-elevated border-border hover:border-primary/40 transition-all"
+          onClick={() => navigate(action.href)}
         >
           <action.icon className="w-4 h-4 text-primary" />
           <span>{action.label}</span>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, 
@@ -24,15 +24,37 @@ const menuItems = [
   { icon: Settings, label: "Configuración", path: "/configuracion", adminPath: "/admin/settings" },
 ];
 
+// Demo user data by level
+const demoUserInfo = {
+  1: { name: "Juan Pérez", avatar: "JP", levelName: "Promotor Común", progress: 38 },
+  2: { name: "Carolina Martínez", avatar: "CM", levelName: "Promotor Cabeza", progress: 55 },
+  3: { name: "Roberto Sánchez", avatar: "RS", levelName: "Sub Socio", progress: 72 },
+  4: { name: "NeonEvents Admin", avatar: "NA", levelName: "Socio (Nivel 4)", progress: 100 },
+};
+
 interface SidebarProps {
   userLevel?: number;
 }
 
-export function Sidebar({ userLevel = 1 }: SidebarProps) {
+export function Sidebar({ userLevel: propLevel }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Get user level from sessionStorage or props
+  const [userLevel, setUserLevel] = useState(propLevel || 1);
+  
+  useEffect(() => {
+    const storedLevel = sessionStorage.getItem("demoUserLevel");
+    if (storedLevel) {
+      setUserLevel(parseInt(storedLevel));
+    } else if (propLevel) {
+      setUserLevel(propLevel);
+    }
+  }, [propLevel]);
 
   const isAdmin = userLevel === 4;
+  const userInfo = demoUserInfo[userLevel as keyof typeof demoUserInfo] || demoUserInfo[1];
   
   const filteredItems = menuItems.filter(
     (item) => {
@@ -41,6 +63,11 @@ export function Sidebar({ userLevel = 1 }: SidebarProps) {
       return true;
     }
   );
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("demoUserLevel");
+    navigate("/login");
+  };
 
   return (
     <motion.aside
@@ -89,7 +116,7 @@ export function Sidebar({ userLevel = 1 }: SidebarProps) {
               "w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold",
               isAdmin ? "bg-gradient-party" : "bg-gradient-party"
             )}>
-              {isAdmin ? "NA" : "JP"}
+              {userInfo.avatar}
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-success rounded-full border-2 border-sidebar pulse-neon" />
           </div>
@@ -102,10 +129,10 @@ export function Sidebar({ userLevel = 1 }: SidebarProps) {
                 className="flex-1 min-w-0"
               >
                 <p className="font-medium text-sm truncate text-foreground">
-                  {isAdmin ? "NeonEvents Admin" : "Juan Pérez"}
+                  {userInfo.name}
                 </p>
                 <p className="text-xs text-sidebar-foreground">
-                  {isAdmin ? "Socio (Nivel 4)" : "Promotor Común"}
+                  {userInfo.levelName}
                 </p>
               </motion.div>
             )}
@@ -121,10 +148,10 @@ export function Sidebar({ userLevel = 1 }: SidebarProps) {
               className="mt-4 space-y-2"
             >
               <div className="flex items-center justify-between text-xs">
-                <span className="text-sidebar-foreground">Nivel 1 → 2</span>
-                <span className="text-primary font-medium">38%</span>
+                <span className="text-sidebar-foreground">Nivel {userLevel} → {userLevel + 1}</span>
+                <span className="text-primary font-medium">{userInfo.progress}%</span>
               </div>
-              <Progress value={38} size="sm" indicatorColor="party" />
+              <Progress value={userInfo.progress} size="sm" indicatorColor="party" />
             </motion.div>
           )}
           {!collapsed && isAdmin && (
@@ -199,6 +226,7 @@ export function Sidebar({ userLevel = 1 }: SidebarProps) {
           )}
         </button>
         <button
+          onClick={handleLogout}
           className={cn(
             "flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-colors text-destructive hover:bg-destructive/10",
             collapsed && "justify-center px-2"
