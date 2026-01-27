@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
@@ -16,9 +16,18 @@ import {
   TrendingUp,
   Eye
 } from "lucide-react";
-import { salesData, events, currentUsers } from "@/data/mockData";
+import { salesData, events, currentUsers, organizationData } from "@/data/mockData";
 
-const user = currentUsers.promotorComun;
+// Get user data by level
+const getUserByLevel = (level: number) => {
+  switch (level) {
+    case 1: return currentUsers.promotorComun;
+    case 2: return currentUsers.promotorCabeza;
+    case 3: return currentUsers.subSocio;
+    case 4: return organizationData;
+    default: return currentUsers.promotorComun;
+  }
+};
 
 const getTypeBadgeColor = (type: string) => {
   switch (type) {
@@ -41,6 +50,18 @@ export default function Ventas() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showDetailModal, setShowDetailModal] = useState(false);
 
+  // Get user level from sessionStorage
+  const [userLevel, setUserLevel] = useState<number>(1);
+  
+  useEffect(() => {
+    const storedLevel = sessionStorage.getItem("demoUserLevel");
+    if (storedLevel) {
+      setUserLevel(parseInt(storedLevel));
+    }
+  }, []);
+
+  const user = getUserByLevel(userLevel);
+
   // Filter sales by event and search term
   const filteredSales = salesData.filter(sale => {
     const matchesEvent = selectedEventId === 'all' || sale.eventId === selectedEventId;
@@ -52,21 +73,24 @@ export default function Ventas() {
 
   // Calculate stats for selected event
   const getStats = () => {
+    const ownSales = user.ownSales || { total: 0, month: 0, week: 0, today: 0 };
+    const teamSales = 'teamSales' in user ? user.teamSales : { month: 0, week: 0 };
+    
     if (selectedEventId === 'all') {
       return {
-        total: user.ownSales.total,
-        month: user.ownSales.month,
-        week: user.ownSales.week,
-        today: user.ownSales.today
+        total: ownSales.total + teamSales.month,
+        month: ownSales.month + teamSales.month,
+        week: ownSales.week + teamSales.week,
+        today: ownSales.today
       };
     }
-    const eventSales = user.salesByEvent[selectedEventId];
-    if (!eventSales) return { total: 0, month: 0, week: 0, today: 0 };
+    const eventSalesData = user.salesByEvent?.[selectedEventId];
+    if (!eventSalesData) return { total: 0, month: 0, week: 0, today: 0 };
     return {
-      total: eventSales.ownSales,
-      month: eventSales.ownSales,
-      week: Math.floor(eventSales.ownSales * 0.3),
-      today: Math.floor(eventSales.ownSales * 0.05)
+      total: eventSalesData.ownSales,
+      month: eventSalesData.ownSales,
+      week: Math.floor(eventSalesData.ownSales * 0.3),
+      today: Math.floor(eventSalesData.ownSales * 0.05)
     };
   };
 
@@ -75,9 +99,9 @@ export default function Ventas() {
 
   return (
     <DashboardLayout 
-      title="Mis Ventas" 
-      subtitle="Historial completo de tus ventas"
-      userLevel={1}
+      title={userLevel >= 2 ? "Ventas del Equipo" : "Mis Ventas"}
+      subtitle={userLevel >= 2 ? "Historial de ventas propias y del equipo" : "Historial completo de tus ventas"}
+      userLevel={userLevel}
       selectedEventId={selectedEventId}
       onEventChange={setSelectedEventId}
     >
