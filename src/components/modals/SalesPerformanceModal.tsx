@@ -37,6 +37,7 @@ interface SalesPerformanceModalProps {
   onOpenChange: (open: boolean) => void;
   member?: TeamMember;
   selectedEventId: string | 'all';
+  showEventSpecificSales?: boolean; // When true, shows only this event's sales in detail
 }
 
 const levelColors: Record<number, string> = {
@@ -50,20 +51,26 @@ export function SalesPerformanceModal({
   open, 
   onOpenChange, 
   member,
-  selectedEventId
+  selectedEventId,
+  showEventSpecificSales = false
 }: SalesPerformanceModalProps) {
   const [activeTab, setActiveTab] = useState("resumen");
   
   if (!member) return null;
 
+  // Get event-specific sales when viewing from event sales page
+  const eventSalesData = selectedEventId !== 'all' ? getEventSales(member, selectedEventId) : null;
+  
   const getDisplaySales = () => {
     if (selectedEventId === 'all') {
       return {
-        own: member.ownSales.month,
-        team: member.teamSales.month,
-        total: getTotalSales(member, 'month'),
-        commission: (member.ownSales.month * member.commissionPerTicket) + 
-                   (member.teamSales.month * (member.commissionPerTicket * 0.1))
+        own: member.ownSales.total,
+        team: member.teamSales.total,
+        total: getTotalSales(member, 'total'),
+        commission: (member.ownSales.total * member.commissionPerTicket) + 
+                   (member.teamSales.total * (member.commissionPerTicket * 0.1)),
+        monthOwn: member.ownSales.month,
+        monthTeam: member.teamSales.month
       };
     }
     const eventSales = getEventSales(member, selectedEventId);
@@ -71,12 +78,15 @@ export function SalesPerformanceModal({
       own: eventSales.own,
       team: eventSales.team,
       total: eventSales.total,
-      commission: eventSales.ownCommission + eventSales.teamCommission
+      commission: eventSales.ownCommission + eventSales.teamCommission,
+      monthOwn: eventSales.own,
+      monthTeam: eventSales.team
     };
   };
 
   const sales = getDisplaySales();
-  const eventName = selectedEventId === 'all' ? 'Todos los eventos' : events.find(e => e.id === selectedEventId)?.name;
+  const currentEvent = selectedEventId !== 'all' ? events.find(e => e.id === selectedEventId) : null;
+  const eventName = selectedEventId === 'all' ? 'Todos los eventos (Histórico)' : currentEvent?.name;
   
   // Calculate performance metrics
   const dailyAverage = Math.round(sales.own / 30);
@@ -84,13 +94,18 @@ export function SalesPerformanceModal({
   const targetProgress = Math.min((sales.own / 100) * 100, 100);
   const ranking = member.level === 1 ? 3 : member.level === 2 ? 1 : 2; // Mock
 
-  // Mock recent sales
-  const recentSales = [
-    { id: 1, date: "Hoy 14:32", type: "VIP", quantity: 2, amount: 180000 },
-    { id: 2, date: "Hoy 11:15", type: "General", quantity: 3, amount: 120000 },
-    { id: 3, date: "Ayer 18:45", type: "General", quantity: 5, amount: 200000 },
-    { id: 4, date: "Ayer 10:20", type: "VIP", quantity: 1, amount: 90000 },
-    { id: 5, date: "26 Ene 16:30", type: "General", quantity: 4, amount: 160000 },
+  // Mock recent sales - filtered by event if specific event selected
+  const recentSales = selectedEventId !== 'all' ? [
+    { id: 1, date: "Hoy 14:32", type: "VIP", quantity: 2, amount: 180000, event: currentEvent?.name },
+    { id: 2, date: "Hoy 11:15", type: "General", quantity: 3, amount: 120000, event: currentEvent?.name },
+    { id: 3, date: "Ayer 18:45", type: "General", quantity: 5, amount: 200000, event: currentEvent?.name },
+    { id: 4, date: "Ayer 10:20", type: "VIP", quantity: 1, amount: 90000, event: currentEvent?.name },
+  ] : [
+    { id: 1, date: "Hoy 14:32", type: "VIP", quantity: 2, amount: 180000, event: "Festival Electrónico" },
+    { id: 2, date: "Hoy 11:15", type: "General", quantity: 3, amount: 120000, event: "Concierto Rock" },
+    { id: 3, date: "Ayer 18:45", type: "General", quantity: 5, amount: 200000, event: "Festival Electrónico" },
+    { id: 4, date: "Ayer 10:20", type: "VIP", quantity: 1, amount: 90000, event: "Fiesta Reggaeton" },
+    { id: 5, date: "26 Ene 16:30", type: "General", quantity: 4, amount: 160000, event: "Concierto Rock" },
   ];
 
   // Mock daily performance
@@ -363,10 +378,20 @@ export function SalesPerformanceModal({
 
             {/* Historial Tab */}
             <TabsContent value="historial" className="space-y-4 mt-0">
+              {/* Event Context Banner when viewing specific event */}
+              {selectedEventId !== 'all' && currentEvent && (
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  <span className="text-sm">
+                    Mostrando ventas de <span className="font-bold text-primary">{currentEvent.name}</span>
+                  </span>
+                </div>
+              )}
+              
               <div className="p-4 rounded-lg bg-card-elevated">
                 <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  Últimas Ventas
+                  Últimas Ventas {selectedEventId !== 'all' && `- ${currentEvent?.name}`}
                 </h4>
                 <div className="space-y-2">
                   {recentSales.map((sale, index) => (
@@ -390,7 +415,14 @@ export function SalesPerformanceModal({
                         <p className="text-sm font-medium">
                           {sale.quantity} tickets {sale.type}
                         </p>
-                        <p className="text-xs text-muted-foreground">{sale.date}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground">{sale.date}</p>
+                          {selectedEventId === 'all' && sale.event && (
+                            <Badge variant="outline" className="text-xs">
+                              {sale.event}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                       <div className="text-right">
                         <p className="font-semibold">${sale.amount.toLocaleString()}</p>
