@@ -232,6 +232,7 @@ export default function AdminUsers() {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isEditingStructure, setIsEditingStructure] = useState(false);
   const editorLevel = 4; // Current user is Socio level
   const navigate = useNavigate();
 
@@ -410,9 +411,61 @@ export default function AdminUsers() {
 
           {/* Estructura Tab - Editable */}
           <TabsContent value="estructura">
-            <OrganizationalStructureEditor 
-              onConfigureLevels={() => setShowLevelConfigModal(true)}
-            />
+            {isEditingStructure ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Edit className="w-5 h-5 text-primary" />
+                    <h3 className="text-lg font-semibold">Editando Estructura</h3>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsEditingStructure(false)}
+                  >
+                    Cerrar Editor
+                  </Button>
+                </div>
+                <OrganizationalStructureEditor 
+                  onConfigureLevels={() => setShowLevelConfigModal(true)}
+                />
+              </div>
+            ) : (
+              <Card variant="neon" className="border-2 border-primary/20">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Users className="w-5 h-5 text-primary" />
+                    Estructura Organizacional
+                    <Badge variant="secondary" className="ml-2">Vista General</Badge>
+                  </CardTitle>
+                  <Button 
+                    variant="party" 
+                    className="gap-2"
+                    onClick={() => setIsEditingStructure(true)}
+                  >
+                    <Edit className="w-4 h-4" />
+                    Editar Estructura
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="p-4 rounded-lg bg-muted/30 border border-border mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      Esta es la estructura organizacional general de tu empresa. Haz clic en "Editar Estructura" para añadir, eliminar o reasignar miembros del equipo.
+                    </p>
+                  </div>
+                  
+                  {/* Read-only tree view */}
+                  <div className="space-y-2">
+                    <GlobalTreeNode
+                      member={organizationData}
+                      onViewDetails={handleViewDetails}
+                      onEditMember={handleEditMember}
+                      maxSales={maxSales}
+                      editorLevel={editorLevel}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Rendimiento Tab - Read only with performance data */}
