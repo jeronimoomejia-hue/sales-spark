@@ -39,11 +39,13 @@ import {
   ChevronDown,
   Headphones,
   Sparkles,
-  Activity
+  Activity,
+  Edit
 } from "lucide-react";
 import { events, organizationData, TeamMember, getTotalSales, getEventSales } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { SalesPerformanceModal } from "@/components/modals/SalesPerformanceModal";
+import { MemberEditModal } from "@/components/admin/MemberEditModal";
 
 // Level colors for hierarchy
 const levelColors: Record<number, string> = {
@@ -66,12 +68,15 @@ interface SalesTreeNodeProps {
   depth?: number;
   maxSales: number;
   onViewDetails: (member: TeamMember) => void;
+  onEditMember: (member: TeamMember) => void;
   defaultExpanded?: boolean;
+  editorLevel: number;
 }
 
-function SalesTreeNode({ member, eventId, depth = 0, maxSales, onViewDetails, defaultExpanded = true }: SalesTreeNodeProps) {
+function SalesTreeNode({ member, eventId, depth = 0, maxSales, onViewDetails, onEditMember, defaultExpanded = true, editorLevel }: SalesTreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded && depth < 2);
   const hasChildren = member.children && member.children.length > 0;
+  const canEdit = editorLevel > member.level;
 
   const eventSales = getEventSales(member, eventId);
   const performancePercentage = maxSales > 0 ? (eventSales.total / maxSales) * 100 : 0;
@@ -236,6 +241,22 @@ function SalesTreeNode({ member, eventId, depth = 0, maxSales, onViewDetails, de
           )}
         </div>
 
+        {/* Edit Button */}
+        {canEdit && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-1 text-primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditMember(member);
+            }}
+          >
+            <Edit className="w-4 h-4" />
+            Editar
+          </Button>
+        )}
+
         {/* View Details Button */}
         <Button 
           variant="outline" 
@@ -266,7 +287,9 @@ function SalesTreeNode({ member, eventId, depth = 0, maxSales, onViewDetails, de
                 depth={depth + 1}
                 maxSales={maxSales}
                 onViewDetails={onViewDetails}
+                onEditMember={onEditMember}
                 defaultExpanded={depth < 1}
+                editorLevel={editorLevel}
               />
             ))}
           </motion.div>
@@ -521,9 +544,26 @@ export default function AdminEventSales() {
   const eventTotalCommission = allMembers.reduce((sum, m) => sum + getEventSales(m, event.id).ownCommission, 0);
   const activeVendors = allMembers.filter(m => getEventSales(m, event.id).own > 0).length;
 
+  const editorLevel = 4; // Current user is Socio level
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
   const handleViewDetails = (member: TeamMember) => {
     setSelectedMember(member);
     setShowDetailModal(true);
+  };
+
+  const handleEditMember = (member: TeamMember) => {
+    setEditingMember(member);
+    setShowEditModal(true);
+  };
+
+  const handleSaveMember = (member: TeamMember) => {
+    console.log("Saving member:", member);
+  };
+
+  const handleDeleteMember = (memberId: string) => {
+    console.log("Deleting member:", memberId);
   };
 
   return (
@@ -733,6 +773,8 @@ export default function AdminEventSales() {
                         eventId={event.id}
                         maxSales={maxSales}
                         onViewDetails={handleViewDetails}
+                        onEditMember={handleEditMember}
+                        editorLevel={editorLevel}
                       />
                     ))}
                   </CardContent>
@@ -815,6 +857,16 @@ export default function AdminEventSales() {
           </Button>
         </DialogContent>
       </Dialog>
+
+      {/* Member Edit Modal */}
+      <MemberEditModal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        member={editingMember}
+        editorLevel={editorLevel}
+        onSave={handleSaveMember}
+        onDelete={handleDeleteMember}
+      />
     </DashboardLayout>
   );
 }
