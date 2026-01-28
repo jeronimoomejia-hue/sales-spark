@@ -10,10 +10,12 @@ export interface SellerRoster {
   avatar: string;
   level: number;
   levelName: string;
-  position: 'cabeza' | 'promotor';
-  assignedTo?: string; // parent seller ID if promotor
+  position: 'subsocio' | 'cabeza' | 'promotor';
+  assignedTo?: string; // parent seller ID (promotor -> cabeza, cabeza -> subsocio)
+  maxSubordinates?: number; // how many people this person can control
   commissionRate: number;
   status: 'active' | 'inactive' | 'pending';
+  invitationStatus?: 'pending' | 'accepted' | 'rejected'; // for event-specific invitations
   stats: {
     totalSales: number;
     avgPerEvent: number;
@@ -32,6 +34,7 @@ export interface EventTemplate {
   isDefault: boolean;
   roster: SellerRoster[];
   formation: {
+    subsocios: number;
     cabezas: number;
     promotores: number;
   };
@@ -65,6 +68,87 @@ export interface SellerRegistration {
 
 // All registered sellers (pool of available sellers)
 export const registeredSellers: SellerRoster[] = [
+  // Sub Socios (Level 3) - control multiple Cabezas
+  {
+    id: "seller-ss-1",
+    sellerId: "subsocio-1",
+    name: "Ricardo Mendoza",
+    avatar: "RM",
+    level: 3,
+    levelName: "Sub Socio",
+    position: 'subsocio',
+    maxSubordinates: 4,
+    commissionRate: 12000,
+    status: 'active',
+    stats: { totalSales: 2580, avgPerEvent: 516, eventsParticipated: 5, successRate: 96 }
+  },
+  {
+    id: "seller-ss-2",
+    sellerId: "subsocio-2",
+    name: "Laura Martínez",
+    avatar: "LM",
+    level: 3,
+    levelName: "Sub Socio",
+    position: 'subsocio',
+    maxSubordinates: 3,
+    commissionRate: 12000,
+    status: 'active',
+    stats: { totalSales: 1980, avgPerEvent: 396, eventsParticipated: 5, successRate: 93 }
+  },
+  // Cabezas (Level 2) - control multiple Promotores
+  {
+    id: "seller-6",
+    sellerId: "head-1",
+    name: "Juan Pérez",
+    avatar: "JP",
+    level: 2,
+    levelName: "Cabeza",
+    position: 'cabeza',
+    maxSubordinates: 5,
+    commissionRate: 10000,
+    status: 'active',
+    stats: { totalSales: 1245, avgPerEvent: 249, eventsParticipated: 5, successRate: 95 }
+  },
+  {
+    id: "seller-7",
+    sellerId: "head-2",
+    name: "Sandra García",
+    avatar: "SG",
+    level: 2,
+    levelName: "Cabeza",
+    position: 'cabeza',
+    maxSubordinates: 4,
+    commissionRate: 10000,
+    status: 'active',
+    stats: { totalSales: 987, avgPerEvent: 197, eventsParticipated: 5, successRate: 91 }
+  },
+  {
+    id: "seller-11",
+    sellerId: "head-3",
+    name: "Roberto Silva",
+    avatar: "RS",
+    level: 2,
+    levelName: "Cabeza",
+    position: 'cabeza',
+    maxSubordinates: 4,
+    commissionRate: 10000,
+    status: 'active',
+    stats: { totalSales: 782, avgPerEvent: 156, eventsParticipated: 5, successRate: 89 }
+  },
+  {
+    id: "seller-12",
+    sellerId: "head-4",
+    name: "Diana Castro",
+    avatar: "DC",
+    level: 2,
+    levelName: "Cabeza",
+    position: 'cabeza',
+    maxSubordinates: 3,
+    commissionRate: 10000,
+    status: 'active',
+    stats: { totalSales: 588, avgPerEvent: 118, eventsParticipated: 5, successRate: 86 }
+  },
+  // Promotores Comunes (Level 1)
   {
     id: "seller-1",
     sellerId: "promo-1",
@@ -126,34 +210,10 @@ export const registeredSellers: SellerRoster[] = [
     stats: { totalSales: 175, avgPerEvent: 35, eventsParticipated: 5, successRate: 80 }
   },
   {
-    id: "seller-6",
-    sellerId: "head-1",
-    name: "Juan Pérez",
-    avatar: "JP",
-    level: 2,
-    levelName: "Cabeza",
-    position: 'cabeza',
-    commissionRate: 10000,
-    status: 'active',
-    stats: { totalSales: 1245, avgPerEvent: 249, eventsParticipated: 5, successRate: 95 }
-  },
-  {
-    id: "seller-7",
-    sellerId: "head-2",
-    name: "Sandra García",
-    avatar: "SG",
-    level: 2,
-    levelName: "Cabeza",
-    position: 'cabeza',
-    commissionRate: 10000,
-    status: 'active',
-    stats: { totalSales: 987, avgPerEvent: 197, eventsParticipated: 5, successRate: 91 }
-  },
-  {
     id: "seller-8",
     sellerId: "promo-6",
-    name: "Roberto Méndez",
-    avatar: "RM",
+    name: "Fernando Méndez",
+    avatar: "FM",
     level: 1,
     levelName: "Promotor",
     position: 'promotor',
@@ -176,38 +236,14 @@ export const registeredSellers: SellerRoster[] = [
   {
     id: "seller-10",
     sellerId: "promo-8",
-    name: "Andrés Castro",
-    avatar: "AC",
+    name: "Andrés Vargas",
+    avatar: "AV",
     level: 1,
     levelName: "Promotor",
     position: 'promotor',
     commissionRate: 7500,
     status: 'active',
     stats: { totalSales: 132, avgPerEvent: 26, eventsParticipated: 5, successRate: 74 }
-  },
-  {
-    id: "seller-11",
-    sellerId: "head-3",
-    name: "Roberto Silva",
-    avatar: "RS",
-    level: 2,
-    levelName: "Cabeza",
-    position: 'cabeza',
-    commissionRate: 10000,
-    status: 'active',
-    stats: { totalSales: 782, avgPerEvent: 156, eventsParticipated: 5, successRate: 89 }
-  },
-  {
-    id: "seller-12",
-    sellerId: "head-4",
-    name: "Diana Castro",
-    avatar: "DC",
-    level: 2,
-    levelName: "Cabeza",
-    position: 'cabeza',
-    commissionRate: 10000,
-    status: 'active',
-    stats: { totalSales: 588, avgPerEvent: 118, eventsParticipated: 5, successRate: 86 }
   },
   {
     id: "seller-13",
@@ -235,6 +271,9 @@ export const registeredSellers: SellerRoster[] = [
   },
 ];
 
+// Helper to find seller by ID
+const findSeller = (id: string) => registeredSellers.find(s => s.sellerId === id);
+
 // Saved templates (like Ultimate Team squads)
 export const savedTemplates: EventTemplate[] = [
   {
@@ -245,18 +284,20 @@ export const savedTemplates: EventTemplate[] = [
     lastUsed: "2026-01-15",
     usageCount: 8,
     isDefault: true,
-    formation: { cabezas: 2, promotores: 8 },
+    formation: { subsocios: 1, cabezas: 2, promotores: 6 },
     roster: [
-      { ...registeredSellers[5], assignedTo: undefined }, // Juan Pérez - Cabeza
-      { ...registeredSellers[6], assignedTo: undefined }, // Sandra García - Cabeza
-      { ...registeredSellers[0], assignedTo: "head-1" }, // Carlos Ruiz -> Juan
-      { ...registeredSellers[1], assignedTo: "head-1" }, // Ana Torres -> Juan
-      { ...registeredSellers[2], assignedTo: "head-1" }, // Luis Gómez -> Juan
-      { ...registeredSellers[3], assignedTo: "head-2" }, // María López -> Sandra
-      { ...registeredSellers[4], assignedTo: "head-2" }, // Pedro Díaz -> Sandra
-      { ...registeredSellers[7], assignedTo: "head-2" }, // Roberto Méndez -> Sandra
-      { ...registeredSellers[8], assignedTo: "head-1" }, // Carolina Vega -> Juan
-      { ...registeredSellers[9], assignedTo: "head-2" }, // Andrés Castro -> Sandra
+      // Sub Socio controla a las cabezas
+      { ...findSeller("subsocio-1")!, assignedTo: undefined },
+      // Cabezas controladas por Sub Socio
+      { ...findSeller("head-1")!, assignedTo: "subsocio-1" },
+      { ...findSeller("head-2")!, assignedTo: "subsocio-1" },
+      // Promotores controlados por Cabezas
+      { ...findSeller("promo-1")!, assignedTo: "head-1" },
+      { ...findSeller("promo-2")!, assignedTo: "head-1" },
+      { ...findSeller("promo-3")!, assignedTo: "head-1" },
+      { ...findSeller("promo-4")!, assignedTo: "head-2" },
+      { ...findSeller("promo-5")!, assignedTo: "head-2" },
+      { ...findSeller("promo-6")!, assignedTo: "head-2" },
     ]
   },
   {
@@ -267,14 +308,15 @@ export const savedTemplates: EventTemplate[] = [
     lastUsed: "2026-01-10",
     usageCount: 3,
     isDefault: false,
-    formation: { cabezas: 2, promotores: 4 },
+    formation: { subsocios: 1, cabezas: 2, promotores: 4 },
     roster: [
-      { ...registeredSellers[10], assignedTo: undefined }, // Roberto Silva - Cabeza
-      { ...registeredSellers[11], assignedTo: undefined }, // Diana Castro - Cabeza
-      { ...registeredSellers[7], assignedTo: "head-3" },
-      { ...registeredSellers[8], assignedTo: "head-3" },
-      { ...registeredSellers[9], assignedTo: "head-4" },
-      { ...registeredSellers[4], assignedTo: "head-4" },
+      { ...findSeller("subsocio-2")!, assignedTo: undefined },
+      { ...findSeller("head-3")!, assignedTo: "subsocio-2" },
+      { ...findSeller("head-4")!, assignedTo: "subsocio-2" },
+      { ...findSeller("promo-7")!, assignedTo: "head-3" },
+      { ...findSeller("promo-8")!, assignedTo: "head-3" },
+      { ...findSeller("promo-5")!, assignedTo: "head-4" },
+      { ...findSeller("promo-6")!, assignedTo: "head-4" },
     ]
   },
   {
@@ -285,16 +327,25 @@ export const savedTemplates: EventTemplate[] = [
     lastUsed: "2025-12-20",
     usageCount: 2,
     isDefault: false,
-    formation: { cabezas: 4, promotores: 10 },
+    formation: { subsocios: 2, cabezas: 4, promotores: 8 },
     roster: [
-      { ...registeredSellers[5], assignedTo: undefined },
-      { ...registeredSellers[6], assignedTo: undefined },
-      { ...registeredSellers[10], assignedTo: undefined },
-      { ...registeredSellers[11], assignedTo: undefined },
-      ...registeredSellers.filter(s => s.position === 'promotor').slice(0, 10).map((s, i) => ({
-        ...s,
-        assignedTo: i < 3 ? "head-1" : i < 5 ? "head-2" : i < 7 ? "head-3" : "head-4"
-      }))
+      // Dos Sub Socios
+      { ...findSeller("subsocio-1")!, assignedTo: undefined },
+      { ...findSeller("subsocio-2")!, assignedTo: undefined },
+      // Cabezas distribuidas entre Sub Socios
+      { ...findSeller("head-1")!, assignedTo: "subsocio-1" },
+      { ...findSeller("head-2")!, assignedTo: "subsocio-1" },
+      { ...findSeller("head-3")!, assignedTo: "subsocio-2" },
+      { ...findSeller("head-4")!, assignedTo: "subsocio-2" },
+      // Promotores distribuidos entre Cabezas
+      { ...findSeller("promo-1")!, assignedTo: "head-1" },
+      { ...findSeller("promo-2")!, assignedTo: "head-1" },
+      { ...findSeller("promo-3")!, assignedTo: "head-2" },
+      { ...findSeller("promo-4")!, assignedTo: "head-2" },
+      { ...findSeller("promo-5")!, assignedTo: "head-3" },
+      { ...findSeller("promo-6")!, assignedTo: "head-3" },
+      { ...findSeller("promo-7")!, assignedTo: "head-4" },
+      { ...findSeller("promo-8")!, assignedTo: "head-4" },
     ]
   }
 ];
