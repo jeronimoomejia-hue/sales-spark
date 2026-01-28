@@ -8,7 +8,7 @@ import { TopSellersRanking } from "@/components/admin/TopSellersRanking";
 import { TeamDistributionChart } from "@/components/admin/TeamDistributionChart";
 import { AlertsPanel } from "@/components/admin/AlertsPanel";
 import { OrganizationalTree } from "@/components/admin/OrganizationalTree";
-import { EventSelector } from "@/components/ui/event-selector";
+import { EventManagementPanel } from "@/components/admin/EventManagementPanel";
 import { TicketIcon } from "lucide-react";
 import { events } from "@/data/mockData";
 
@@ -43,14 +43,14 @@ export default function AdminDashboard() {
           </motion.div>
         )}
 
+        {/* EVENT MANAGEMENT - Most Prominent Section */}
+        <EventManagementPanel />
+
         {/* KPI Cards - 4 columnas */}
         <AdminKPICards selectedEventId={selectedEventId} />
 
         {/* Quick Actions */}
         <AdminQuickActions />
-
-        {/* Organizational Tree - More Prominent */}
-        <OrganizationalTree selectedEventId={selectedEventId} />
 
         {/* Charts Row - 2/3 and 1/3 split */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -67,6 +67,9 @@ export default function AdminDashboard() {
           <TopSellersRanking />
           <TeamDistributionChart />
         </div>
+
+        {/* Organizational Tree */}
+        <OrganizationalTree selectedEventId={selectedEventId} />
       </div>
     </DashboardLayout>
   );

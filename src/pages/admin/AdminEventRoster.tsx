@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { RosterInvitationModal } from "@/components/admin/RosterInvitationModal";
 import { 
   Users, 
   UserPlus,
@@ -21,7 +22,8 @@ import {
   Check,
   X,
   Link2,
-  Share2
+  Share2,
+  Bell
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { events } from "@/data/mockData";
@@ -46,8 +48,10 @@ export default function AdminEventRoster() {
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showInvitationModal, setShowInvitationModal] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [draggedSeller, setDraggedSeller] = useState<SellerRoster | null>(null);
+  const [rosterActivated, setRosterActivated] = useState(assignment?.status === 'active');
   
   const availableSellers = registeredSellers.filter(
     s => s.status === 'active' && !roster.find(r => r.sellerId === s.sellerId)
@@ -94,7 +98,16 @@ export default function AdminEventRoster() {
   };
 
   const handleActivateRoster = () => {
-    toast.success("Alineación activada para el evento");
+    if (roster.length === 0) {
+      toast.error("Añade vendedores a la alineación primero");
+      return;
+    }
+    setShowInvitationModal(true);
+  };
+
+  const handleConfirmActivation = () => {
+    setRosterActivated(true);
+    toast.success("Alineación activada - Vendedores notificados");
   };
 
   const inviteLink = `https://crews.app/join/${event.id}`;
@@ -109,13 +122,17 @@ export default function AdminEventRoster() {
         {/* Header Actions */}
         <div className="flex flex-wrap gap-3 items-center justify-between">
           <div className="flex items-center gap-2">
-            <Badge variant={assignment?.status === 'active' ? 'default' : 'outline'} className="gap-1">
-              {assignment?.status === 'active' ? (
+            <Badge variant={rosterActivated ? 'default' : 'outline'} className="gap-1">
+              {rosterActivated ? (
                 <><Check className="w-3 h-3" /> Activa</>
               ) : (
                 "Borrador"
               )}
             </Badge>
+            <span className="text-sm text-muted-foreground">
+              {roster.length} vendedores • {cabezas.length} cabezas
+            </span>
+          </div>
             <span className="text-sm text-muted-foreground">
               {roster.length} vendedores • {cabezas.length} cabezas
             </span>
@@ -133,9 +150,23 @@ export default function AdminEventRoster() {
               <Save className="w-4 h-4 mr-2" />
               Guardar Plantilla
             </Button>
-            <Button variant="party" size="sm" onClick={handleActivateRoster}>
-              <Check className="w-4 h-4 mr-2" />
-              Activar Alineación
+            <Button 
+              variant="party" 
+              size="sm" 
+              onClick={handleActivateRoster}
+              disabled={rosterActivated}
+            >
+              {rosterActivated ? (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Alineación Activa
+                </>
+              ) : (
+                <>
+                  <Bell className="w-4 h-4 mr-2" />
+                  Activar y Notificar
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -358,7 +389,6 @@ export default function AdminEventRoster() {
             </Card>
           </div>
         </div>
-      </div>
 
       {/* Load Template Modal */}
       <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
@@ -474,6 +504,15 @@ export default function AdminEventRoster() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Roster Invitation Modal */}
+      <RosterInvitationModal
+        open={showInvitationModal}
+        onOpenChange={setShowInvitationModal}
+        event={event}
+        roster={roster}
+        onConfirmSend={handleConfirmActivation}
+      />
     </DashboardLayout>
   );
 }
