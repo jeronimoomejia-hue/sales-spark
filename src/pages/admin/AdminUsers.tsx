@@ -40,6 +40,7 @@ import { SalesDetailModal } from "@/components/modals/SalesDetailModal";
 import { LevelConfigurationModal } from "@/components/admin/LevelConfigurationModal";
 import { TemplateManagementModal } from "@/components/admin/TemplateManagementModal";
 import { MemberEditModal } from "@/components/admin/MemberEditModal";
+import { OrganizationalStructureEditor } from "@/components/admin/OrganizationalStructureEditor";
 
 const levelColors: Record<number, string> = {
   1: "bg-neon-blue/20 text-neon-blue border-neon-blue/30",
@@ -223,7 +224,7 @@ function GlobalTreeNode({ member, depth = 0, onViewDetails, onEditMember, maxSal
 export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
-  const [activeTab, setActiveTab] = useState("organigrama");
+  const [activeTab, setActiveTab] = useState("estructura");
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showSalesModal, setShowSalesModal] = useState(false);
@@ -365,9 +366,13 @@ export default function AdminUsers() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between mb-4">
             <TabsList>
+              <TabsTrigger value="estructura" className="gap-2">
+                <Settings className="w-4 h-4" />
+                Estructura
+              </TabsTrigger>
               <TabsTrigger value="organigrama" className="gap-2">
                 <LayoutGrid className="w-4 h-4" />
-                Organigrama
+                Rendimiento
               </TabsTrigger>
               <TabsTrigger value="plantillas" className="gap-2">
                 <FileText className="w-4 h-4" />
@@ -403,7 +408,14 @@ export default function AdminUsers() {
             </div>
           </div>
 
-          {/* Organigrama Tab */}
+          {/* Estructura Tab - Editable */}
+          <TabsContent value="estructura">
+            <OrganizationalStructureEditor 
+              onConfigureLevels={() => setShowLevelConfigModal(true)}
+            />
+          </TabsContent>
+
+          {/* Rendimiento Tab - Read only with performance data */}
           <TabsContent value="organigrama">
             <Card variant="neon" className="border-2 border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
