@@ -7,11 +7,17 @@ import {
   Wallet, 
   BarChart3, 
   Link2, 
-  Settings 
+  Settings,
+  Calendar,
+  LayoutGrid,
+  UserPlus
 } from "lucide-react";
 
 const actions = [
-  { icon: Users, label: "Gestionar Usuarios", href: "/admin/users" },
+  { icon: Calendar, label: "Eventos", href: "/admin/events", primary: true },
+  { icon: LayoutGrid, label: "Plantillas", href: "/admin/templates", primary: true },
+  { icon: UserPlus, label: "Solicitudes", href: "/admin/registrations", primary: true },
+  { icon: Users, label: "Usuarios", href: "/admin/users" },
   { icon: Target, label: "Hitos", href: "/admin/milestones" },
   { icon: Wallet, label: "Comisiones", href: "/admin/commissions" },
   { icon: BarChart3, label: "Reportes", href: "/admin/reports" },
@@ -32,11 +38,14 @@ export function AdminQuickActions() {
       {actions.map((action) => (
         <Button
           key={action.label}
-          variant="outline"
-          className="gap-2 bg-card hover:bg-card-elevated border-border hover:border-primary/40 transition-all"
+          variant={action.primary ? "party" : "outline"}
+          className={action.primary 
+            ? "gap-2" 
+            : "gap-2 bg-card hover:bg-card-elevated border-border hover:border-primary/40 transition-all"
+          }
           onClick={() => navigate(action.href)}
         >
-          <action.icon className="w-4 h-4 text-primary" />
+          <action.icon className={`w-4 h-4 ${action.primary ? '' : 'text-primary'}`} />
           <span>{action.label}</span>
         </Button>
       ))}

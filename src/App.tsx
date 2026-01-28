@@ -19,6 +19,10 @@ import AdminCommissions from "./pages/admin/AdminCommissions";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminIntegrations from "./pages/admin/AdminIntegrations";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminEvents from "./pages/admin/AdminEvents";
+import AdminEventRoster from "./pages/admin/AdminEventRoster";
+import AdminTemplates from "./pages/admin/AdminTemplates";
+import AdminSellerRegistrations from "./pages/admin/AdminSellerRegistrations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +44,10 @@ const App = () => (
           <Route path="/configuracion" element={<Configuracion />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/events" element={<AdminEvents />} />
+          <Route path="/admin/events/:eventId/roster" element={<AdminEventRoster />} />
+          <Route path="/admin/templates" element={<AdminTemplates />} />
+          <Route path="/admin/registrations" element={<AdminSellerRegistrations />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/milestones" element={<AdminMilestones />} />
           <Route path="/admin/closures" element={<AdminClosures />} />
