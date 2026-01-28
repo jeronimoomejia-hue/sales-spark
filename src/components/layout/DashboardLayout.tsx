@@ -1,5 +1,6 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
+import { AdminSidebar } from "./AdminSidebar";
 import { Header } from "./Header";
 
 interface DashboardLayoutProps {
@@ -19,10 +20,16 @@ export function DashboardLayout({
   selectedEventId = 'all',
   onEventChange
 }: DashboardLayoutProps) {
+  const isAdmin = userLevel === 4;
+  
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar userLevel={userLevel} />
-      <div className="ml-[260px] transition-all duration-300">
+      {isAdmin ? (
+        <AdminSidebar userLevel={userLevel} />
+      ) : (
+        <Sidebar userLevel={userLevel} />
+      )}
+      <div className={`transition-all duration-300 ${isAdmin ? 'ml-[280px]' : 'ml-[260px]'}`}>
         <Header 
           title={title} 
           subtitle={subtitle} 
