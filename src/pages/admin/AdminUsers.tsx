@@ -30,12 +30,15 @@ import {
   ChevronRight,
   ChevronDown,
   Headphones,
-  FileText
+  FileText,
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { organizationData, TeamMember, getTotalSales, events, salesData } from "@/data/mockData";
 import { SalesPerformanceModal } from "@/components/modals/SalesPerformanceModal";
 import { SalesDetailModal } from "@/components/modals/SalesDetailModal";
+import { LevelConfigurationModal } from "@/components/admin/LevelConfigurationModal";
+import { TemplateManagementModal } from "@/components/admin/TemplateManagementModal";
 
 const levelColors: Record<number, string> = {
   1: "bg-neon-blue/20 text-neon-blue border-neon-blue/30",
@@ -202,6 +205,8 @@ export default function AdminUsers() {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showSalesModal, setShowSalesModal] = useState(false);
+  const [showLevelConfigModal, setShowLevelConfigModal] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const navigate = useNavigate();
 
   const handleViewDetails = (member: TeamMember) => {
@@ -256,6 +261,14 @@ export default function AdminUsers() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  className="gap-2"
+                  onClick={() => setShowLevelConfigModal(true)}
+                >
+                  <Settings className="w-4 h-4" />
+                  Configurar Niveles
+                </Button>
                 <Button variant="outline" className="gap-2">
                   <Headphones className="w-4 h-4" />
                   Soporte
@@ -416,11 +429,19 @@ export default function AdminUsers() {
           {/* Plantillas Tab */}
           <TabsContent value="plantillas">
             <Card variant="glass">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-primary" />
                   Plantillas de Alineación
                 </CardTitle>
+                <Button 
+                  variant="party" 
+                  className="gap-2"
+                  onClick={() => setShowTemplateModal(true)}
+                >
+                  <Settings className="w-4 h-4" />
+                  Gestionar Plantillas
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-4">
@@ -457,7 +478,12 @@ export default function AdminUsers() {
                           </div>
                         </div>
                         <div className="flex gap-2 mt-3">
-                          <Button variant="outline" size="sm" className="flex-1 gap-1">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 gap-1"
+                            onClick={() => setShowTemplateModal(true)}
+                          >
                             <Eye className="w-3 h-3" />
                             Ver más
                           </Button>
@@ -473,7 +499,11 @@ export default function AdminUsers() {
 
                 <div className="mt-4 pt-4 border-t border-border flex justify-between items-center">
                   <p className="text-sm text-muted-foreground">4 plantillas guardadas</p>
-                  <Button variant="outline" className="gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="gap-2"
+                    onClick={() => setShowTemplateModal(true)}
+                  >
                     <UserPlus className="w-4 h-4" />
                     Crear Nueva Plantilla
                   </Button>
@@ -585,6 +615,18 @@ export default function AdminUsers() {
         open={showSalesModal}
         onOpenChange={setShowSalesModal}
         title="Todas las Ventas - Histórico Global"
+      />
+
+      {/* Level Configuration Modal */}
+      <LevelConfigurationModal
+        open={showLevelConfigModal}
+        onOpenChange={setShowLevelConfigModal}
+      />
+
+      {/* Template Management Modal */}
+      <TemplateManagementModal
+        open={showTemplateModal}
+        onOpenChange={setShowTemplateModal}
       />
     </DashboardLayout>
   );
