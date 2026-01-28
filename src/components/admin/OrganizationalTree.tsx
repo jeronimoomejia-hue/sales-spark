@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -12,11 +13,17 @@ import {
   Expand,
   Minimize2,
   Eye,
-  TrendingUp
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Target,
+  Trophy,
+  BarChart3,
+  Headphones
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { organizationData, TeamMember, getTotalSales, getEventSales, events } from "@/data/mockData";
-import { TeamDetailModal } from "@/components/modals/TeamDetailModal";
+import { SalesPerformanceModal } from "@/components/modals/SalesPerformanceModal";
 
 interface OrganizationalTreeProps {
   selectedEventId?: string | 'all';
@@ -42,22 +49,36 @@ interface TreeNodeProps {
   defaultExpanded?: boolean;
   selectedEventId: string | 'all';
   onViewDetails: (member: TeamMember) => void;
+  maxSales: number;
 }
 
-function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId, onViewDetails }: TreeNodeProps) {
+function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId, onViewDetails, maxSales }: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded || depth < 2);
   const hasChildren = member.children && member.children.length > 0;
 
   // Get sales based on event filter
   const getDisplaySales = () => {
     if (selectedEventId === 'all') {
-      return getTotalSales(member, 'month');
+      return {
+        own: member.ownSales.month,
+        team: member.teamSales.month,
+        total: getTotalSales(member, 'month'),
+        commission: member.ownSales.month * member.commissionPerTicket
+      };
     }
     const eventSales = getEventSales(member, selectedEventId);
-    return eventSales.total;
+    return {
+      own: eventSales.own,
+      team: eventSales.team,
+      total: eventSales.total,
+      commission: eventSales.ownCommission
+    };
   };
 
-  const displaySales = getDisplaySales();
+  const sales = getDisplaySales();
+  const performancePercentage = maxSales > 0 ? (sales.total / maxSales) * 100 : 0;
+  const isTopPerformer = performancePercentage > 80;
+  const isLowPerformer = performancePercentage < 30;
 
   return (
     <div className="relative">
@@ -75,8 +96,10 @@ function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId,
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.2, delay: depth * 0.05 }}
         className={cn(
-          "flex items-center gap-3 p-3 rounded-lg hover:bg-card-elevated transition-colors cursor-pointer group",
-          depth > 0 && "ml-6"
+          "flex items-center gap-3 p-3 rounded-lg hover:bg-card-elevated transition-colors cursor-pointer group border border-transparent",
+          depth > 0 && "ml-6",
+          isTopPerformer && "border-success/30 bg-success/5",
+          isLowPerformer && "border-destructive/30 bg-destructive/5"
         )}
       >
         {/* Expand/Collapse */}
@@ -95,12 +118,19 @@ function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId,
           <div className="w-6" />
         )}
 
-        {/* Avatar */}
-        <div className={cn(
-          "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0",
-          levelAvatarColors[member.level]
-        )}>
-          {member.avatar}
+        {/* Avatar with performance indicator */}
+        <div className="relative">
+          <div className={cn(
+            "w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0",
+            levelAvatarColors[member.level]
+          )}>
+            {member.avatar}
+          </div>
+          {isTopPerformer && (
+            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success flex items-center justify-center">
+              <Trophy className="w-2.5 h-2.5 text-white" />
+            </div>
+          )}
         </div>
 
         {/* Info */}
@@ -114,30 +144,80 @@ function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId,
               {member.levelName}
             </Badge>
           </div>
-          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <TicketIcon className="w-3 h-3" />
-              {displaySales.toLocaleString()} tickets
-              {member.teamSales.month > 0 && (
-                <span className="text-success ml-1">
-                  (+{(selectedEventId === 'all' ? member.teamSales.month : getEventSales(member, selectedEventId).team)} equipo)
-                </span>
-              )}
-            </span>
-            {member.teamSize && (
-              <span className="flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                {member.teamSize} personas
-              </span>
-            )}
+          
+          {/* Performance Bar */}
+          <div className="flex items-center gap-2 mt-1.5">
+            <Progress 
+              value={performancePercentage} 
+              className={cn(
+                "h-1.5 flex-1",
+                isTopPerformer && "[&>div]:bg-success",
+                isLowPerformer && "[&>div]:bg-destructive"
+              )} 
+            />
+            <span className="text-xs text-muted-foreground w-8">{Math.round(performancePercentage)}%</span>
           </div>
+        </div>
+
+        {/* Sales Stats */}
+        <div className="flex items-center gap-4 text-right">
+          <div>
+            <div className="flex items-center gap-1 justify-end">
+              <TicketIcon className="w-3 h-3 text-primary" />
+              <span className="text-sm font-bold">{sales.own}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">propias</p>
+          </div>
+          {sales.team > 0 && (
+            <div>
+              <div className="flex items-center gap-1 justify-end">
+                <Users className="w-3 h-3 text-success" />
+                <span className="text-sm font-bold text-success">+{sales.team}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">equipo</p>
+            </div>
+          )}
+          <div>
+            <div className="flex items-center gap-1 justify-end">
+              <DollarSign className="w-3 h-3 text-warning" />
+              <span className="text-sm font-bold text-warning">
+                ${(sales.commission / 1000000).toFixed(1)}M
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">comisión</p>
+          </div>
+        </div>
+
+        {/* Trend Indicator */}
+        <div className={cn(
+          "flex items-center gap-1 px-2 py-1 rounded text-xs",
+          isTopPerformer ? "bg-success/20 text-success" : 
+          isLowPerformer ? "bg-destructive/20 text-destructive" : 
+          "bg-muted text-muted-foreground"
+        )}>
+          {isTopPerformer ? (
+            <>
+              <TrendingUp className="w-3 h-3" />
+              +12%
+            </>
+          ) : isLowPerformer ? (
+            <>
+              <TrendingDown className="w-3 h-3" />
+              -8%
+            </>
+          ) : (
+            <>
+              <TrendingUp className="w-3 h-3" />
+              +5%
+            </>
+          )}
         </div>
 
         {/* View Details Button */}
         <Button 
-          variant="ghost" 
+          variant="outline" 
           size="sm" 
-          className="opacity-0 group-hover:opacity-100 transition-opacity gap-1"
+          className="gap-1"
           onClick={() => onViewDetails(member)}
         >
           <Eye className="w-4 h-4" />
@@ -162,6 +242,7 @@ function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId,
                 depth={depth + 1}
                 selectedEventId={selectedEventId}
                 onViewDetails={onViewDetails}
+                maxSales={maxSales}
               />
             ))}
           </motion.div>
@@ -180,6 +261,21 @@ export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTr
     setSelectedMember(member);
     setShowDetailModal(true);
   };
+
+  // Calculate max sales for performance comparison
+  const calculateMaxSales = (member: TeamMember): number => {
+    const ownTotal = selectedEventId === 'all' 
+      ? getTotalSales(member, 'month')
+      : getEventSales(member, selectedEventId).total;
+    
+    const childMax = member.children 
+      ? Math.max(...member.children.map(c => calculateMaxSales(c)), 0)
+      : 0;
+    
+    return Math.max(ownTotal, childMax);
+  };
+
+  const maxSales = calculateMaxSales(organizationData);
 
   // Calculate totals based on event filter
   const getTotalStats = () => {
@@ -200,6 +296,15 @@ export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTr
 
   const stats = getTotalStats();
 
+  // Calculate level counts
+  const countByLevel = (member: TeamMember, counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 }): Record<number, number> => {
+    counts[member.level] = (counts[member.level] || 0) + 1;
+    member.children?.forEach(child => countByLevel(child, counts));
+    return counts;
+  };
+  
+  const levelCounts = countByLevel(organizationData);
+
   return (
     <>
       <motion.div
@@ -210,12 +315,17 @@ export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTr
         <Card variant="neon" className="border-2 border-primary/20">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="flex items-center gap-2 text-xl">
-              🌐 Estructura Organizacional
+              <BarChart3 className="w-5 h-5 text-primary" />
+              Ventas por Estructura Organizacional
               <Badge variant="secondary" className="ml-2">
                 {selectedEventId === 'all' ? 'Todos los eventos' : events.find(e => e.id === selectedEventId)?.name}
               </Badge>
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Headphones className="w-4 h-4" />
+                Soporte
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -241,23 +351,48 @@ export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTr
             </div>
           </CardHeader>
           <CardContent>
-            {/* Summary stats */}
+            {/* Summary stats by level */}
             <div className="grid grid-cols-4 gap-3 p-4 mb-4 rounded-lg bg-card-elevated">
-              <div className="text-center">
-                <p className="text-2xl font-bold font-display text-neon-purple">3</p>
+              <div className="text-center p-2 rounded-lg bg-gradient-party/10 border border-neon-purple/20">
+                <p className="text-2xl font-bold font-display text-neon-purple">{levelCounts[4]}</p>
                 <p className="text-xs text-muted-foreground">Socios</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold font-display text-neon-pink">12</p>
+              <div className="text-center p-2 rounded-lg bg-neon-pink/10 border border-neon-pink/20">
+                <p className="text-2xl font-bold font-display text-neon-pink">{levelCounts[3]}</p>
                 <p className="text-xs text-muted-foreground">Sub Socios</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold font-display text-neon-orange">22</p>
+              <div className="text-center p-2 rounded-lg bg-neon-orange/10 border border-neon-orange/20">
+                <p className="text-2xl font-bold font-display text-neon-orange">{levelCounts[2]}</p>
                 <p className="text-xs text-muted-foreground">Cabezas</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold font-display text-neon-blue">52</p>
+              <div className="text-center p-2 rounded-lg bg-neon-blue/10 border border-neon-blue/20">
+                <p className="text-2xl font-bold font-display text-neon-blue">{levelCounts[1]}</p>
                 <p className="text-xs text-muted-foreground">Comunes</p>
+              </div>
+            </div>
+
+            {/* Performance Legend */}
+            <div className="flex items-center justify-between p-3 mb-4 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-4 text-xs">
+                <span className="text-muted-foreground">Leyenda:</span>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-success" />
+                  <span>Top Performer (+80%)</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-primary" />
+                  <span>Normal</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-full bg-destructive" />
+                  <span>Bajo Rendimiento (-30%)</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  Meta máxima: <span className="font-bold text-foreground">{maxSales} tickets</span>
+                </span>
               </div>
             </div>
 
@@ -271,11 +406,25 @@ export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTr
                     <p className="text-xs text-muted-foreground">Las ventas de subordinados se acumulan hacia arriba</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold font-display text-gradient-party">
-                    {stats.totalTickets.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-muted-foreground">tickets totales</p>
+                <div className="flex items-center gap-6">
+                  <div className="text-right">
+                    <p className="text-xl font-bold font-display text-primary">
+                      {stats.teamOwnSales.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">ventas directas</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold font-display text-success">
+                      +{stats.teamSales.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">ventas de equipo</p>
+                  </div>
+                  <div className="text-right border-l pl-4 border-border">
+                    <p className="text-2xl font-bold font-display text-gradient-party">
+                      {stats.totalTickets.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">tickets totales</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -289,6 +438,7 @@ export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTr
                   defaultExpanded={allExpanded}
                   selectedEventId={selectedEventId}
                   onViewDetails={handleViewDetails}
+                  maxSales={maxSales}
                 />
               ))}
             </div>
@@ -296,24 +446,30 @@ export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTr
             {/* Total */}
             <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Total: <span className="font-bold text-foreground">89 usuarios</span> | 
+                Total: <span className="font-bold text-foreground">{Object.values(levelCounts).reduce((a, b) => a + b, 0)} usuarios</span> | 
                 <span className="font-bold text-success ml-1">{stats.totalTickets.toLocaleString()} tickets vendidos</span>
               </p>
-              <Button variant="ghost" size="sm" className="gap-1 text-primary" onClick={() => handleViewDetails(organizationData)}>
-                Ver mapa visual
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="gap-1">
+                  <Headphones className="w-4 h-4" />
+                  Soporte
+                </Button>
+                <Button variant="ghost" size="sm" className="gap-1 text-primary" onClick={() => handleViewDetails(organizationData)}>
+                  Ver mapa visual completo
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Team Detail Modal */}
-      <TeamDetailModal
+      {/* Sales Performance Modal */}
+      <SalesPerformanceModal
         open={showDetailModal}
         onOpenChange={setShowDetailModal}
         member={selectedMember || undefined}
-        title={`Detalle de ${selectedMember?.name || 'Equipo'}`}
+        selectedEventId={selectedEventId}
       />
     </>
   );
