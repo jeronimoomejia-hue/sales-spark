@@ -298,14 +298,26 @@ export function OrganizationalTree({ selectedEventId = 'all', editorLevel = 4, s
     setShowEditModal(true);
   };
 
-  const handleSaveMember = (member: TeamMember) => {
+  const handleSaveMember = (member: TeamMember, newParentId?: string) => {
     // In a real app, this would update the database
-    console.log("Saving member:", member);
+    console.log("Saving member:", member, "New parent:", newParentId);
   };
 
   const handleDeleteMember = (memberId: string) => {
     // In a real app, this would delete from the database
     console.log("Deleting member:", memberId);
+  };
+
+  // Collect all members by level for supervisor assignment
+  const collectMembersByLevel = (member: TeamMember, collection: TeamMember[] = []): TeamMember[] => {
+    collection.push(member);
+    member.children?.forEach(child => collectMembersByLevel(child, collection));
+    return collection;
+  };
+  
+  const allMembers = collectMembersByLevel(organizationData);
+  const getAvailableSupervisors = (forLevel: number): TeamMember[] => {
+    return allMembers.filter(m => m.level === forLevel + 1);
   };
 
   // Calculate max sales for performance comparison
@@ -527,6 +539,7 @@ export function OrganizationalTree({ selectedEventId = 'all', editorLevel = 4, s
         onOpenChange={setShowEditModal}
         member={editingMember}
         editorLevel={editorLevel}
+        availableSupervisors={editingMember ? getAvailableSupervisors(editingMember.level) : []}
         onSave={handleSaveMember}
         onDelete={handleDeleteMember}
       />

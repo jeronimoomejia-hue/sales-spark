@@ -31,7 +31,8 @@ interface MemberEditModalProps {
   onOpenChange: (open: boolean) => void;
   member: TeamMember | null;
   editorLevel: number; // The level of the person editing (to determine permissions)
-  onSave?: (member: TeamMember) => void;
+  availableSupervisors?: TeamMember[]; // List of potential supervisors this member can be assigned to
+  onSave?: (member: TeamMember, newParentId?: string) => void;
   onDelete?: (memberId: string) => void;
 }
 
@@ -54,11 +55,13 @@ export function MemberEditModal({
   onOpenChange, 
   member,
   editorLevel,
+  availableSupervisors = [],
   onSave,
   onDelete
 }: MemberEditModalProps) {
   const [editForm, setEditForm] = useState({
     name: "",
+    parentId: null as string | null,
     level: 1,
     commissionPerTicket: 5000,
     teamSize: 0,
@@ -70,6 +73,7 @@ export function MemberEditModal({
     if (member) {
       setEditForm({
         name: member.name,
+        parentId: member.parentId,
         level: member.level,
         commissionPerTicket: member.commissionPerTicket,
         teamSize: member.teamSize || 0,
@@ -86,6 +90,11 @@ export function MemberEditModal({
   const availableLevels = Array.from({ length: editorLevel - 1 }, (_, i) => i + 1);
   // Can promote up to one level below editor
   const canPromote = member.level < editorLevel - 1;
+  
+  // Filter supervisors that are at the level above the member
+  const validSupervisors = availableSupervisors.filter(
+    (sup) => sup.level === member.level + 1 && sup.id !== member.id
+  );
 
   const handleSave = () => {
     if (!canEdit) {
@@ -100,16 +109,21 @@ export function MemberEditModal({
     const updatedMember: TeamMember = {
       ...member,
       name: editForm.name,
+      parentId: editForm.parentId,
       level: editForm.level,
       levelName: levelNames[editForm.level],
       commissionPerTicket: editForm.commissionPerTicket,
       teamSize: editForm.teamSize,
     };
 
-    onSave?.(updatedMember);
+    const parentChanged = editForm.parentId !== member.parentId;
+    onSave?.(updatedMember, parentChanged ? editForm.parentId || undefined : undefined);
+    
     toast({
       title: "Usuario actualizado",
-      description: `${editForm.name} ha sido actualizado correctamente.`,
+      description: parentChanged 
+        ? `${editForm.name} ha sido reasignado correctamente.`
+        : `${editForm.name} ha sido actualizado correctamente.`,
     });
     onOpenChange(false);
   };
@@ -243,6 +257,46 @@ export function MemberEditModal({
                 ))}
               </div>
             </div>
+
+            {/* Supervisor Assignment */}
+            {validSupervisors.length > 0 && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  Reporta a (Supervisor)
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {validSupervisors.map((supervisor) => (
+                    <button
+                      key={supervisor.id}
+                      onClick={() => setEditForm({ ...editForm, parentId: supervisor.id })}
+                      className={cn(
+                        "px-3 py-2 rounded-lg border transition-all flex items-center gap-2",
+                        editForm.parentId === supervisor.id
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:border-primary/50"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                        levelColors[supervisor.level]
+                      )}>
+                        {supervisor.avatar?.charAt(0) || supervisor.name.charAt(0)}
+                      </div>
+                      <span className="text-sm">{supervisor.name}</span>
+                      {editForm.parentId === supervisor.id && (
+                        <Check className="w-3 h-3 text-primary" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Actualmente reporta a: {
+                    validSupervisors.find(s => s.id === member.parentId)?.name || "Sin asignar"
+                  }
+                </p>
+              </div>
+            )}
 
             {/* Commission */}
             <div className="space-y-2">
