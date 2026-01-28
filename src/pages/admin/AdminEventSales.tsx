@@ -46,6 +46,8 @@ import { events, organizationData, TeamMember, getTotalSales, getEventSales } fr
 import { cn } from "@/lib/utils";
 import { SalesPerformanceModal } from "@/components/modals/SalesPerformanceModal";
 import { MemberEditModal } from "@/components/admin/MemberEditModal";
+import { SalesHistoryPanel } from "@/components/admin/SalesHistoryPanel";
+import { SalesAnalyticsPanel } from "@/components/admin/SalesAnalyticsPanel";
 
 // Level colors for hierarchy
 const levelColors: Record<number, string> = {
@@ -795,43 +797,11 @@ export default function AdminEventSales() {
           </TabsContent>
 
           <TabsContent value="historial" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Historial Completo de Ventas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center py-12">
-                  Vista detallada del historial de ventas - Próximamente
-                </p>
-                <Button variant="outline" className="w-full gap-2">
-                  <Headphones className="w-4 h-4" />
-                  Contactar Soporte
-                </Button>
-              </CardContent>
-            </Card>
+            <SalesHistoryPanel eventId={event.id} />
           </TabsContent>
 
           <TabsContent value="analisis" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <PieChart className="w-5 h-5" />
-                  Análisis Avanzado
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center py-12">
-                  Gráficos y análisis detallados - Próximamente
-                </p>
-                <Button variant="outline" className="w-full gap-2">
-                  <Headphones className="w-4 h-4" />
-                  Contactar Soporte
-                </Button>
-              </CardContent>
-            </Card>
+            <SalesAnalyticsPanel eventId={event.id} />
           </TabsContent>
         </Tabs>
       </div>
