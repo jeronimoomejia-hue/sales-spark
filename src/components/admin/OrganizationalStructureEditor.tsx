@@ -190,14 +190,14 @@ function MemberCard({
         {/* Parent assignment */}
         {possibleParents && possibleParents.length > 0 && onAssign && (
           <Select 
-            value={member.assignedTo || ""} 
-            onValueChange={(v) => onAssign(v || undefined)}
+            value={member.assignedTo || "unassigned"} 
+            onValueChange={(v) => onAssign(v === "unassigned" ? undefined : v)}
           >
             <SelectTrigger className="w-36 h-8 text-xs">
               <SelectValue placeholder="Asignar a..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Sin asignar</SelectItem>
+              <SelectItem value="unassigned">Sin asignar</SelectItem>
               {possibleParents.map((parent) => (
                 <SelectItem key={parent.id} value={parent.id}>
                   {parent.name}
