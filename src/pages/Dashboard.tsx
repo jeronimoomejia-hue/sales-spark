@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { PromotoraSelector } from "@/components/dashboard/PromotoraSelector";
+import { AdvancedKPIPanel } from "@/components/dashboard/AdvancedKPIPanel";
+import { EventSegmentedView } from "@/components/dashboard/EventSegmentedView";
+import { TeamManagementPanel } from "@/components/dashboard/TeamManagementPanel";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { LevelProgress } from "@/components/dashboard/LevelProgress";
 import { MilestoneCard } from "@/components/dashboard/MilestoneCard";
@@ -8,9 +12,12 @@ import { SalesChart } from "@/components/dashboard/SalesChart";
 import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
 import { SalesDetailModal } from "@/components/modals/SalesDetailModal";
 import { TeamDetailModal } from "@/components/modals/TeamDetailModal";
+import { SalesPerformanceModal } from "@/components/modals/SalesPerformanceModal";
+import { MemberEditModal } from "@/components/admin/MemberEditModal";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   TicketIcon, 
   TrendingUp, 
@@ -20,7 +27,13 @@ import {
   Target,
   Users,
   Eye,
-  Trophy
+  Trophy,
+  BarChart3,
+  Sparkles,
+  Building2,
+  ChevronRight,
+  LayoutDashboard,
+  Flame
 } from "lucide-react";
 import { currentUsers, weeklyChartData, weeklyChartDataByEvent, events, organizationData, TeamMember } from "@/data/mockData";
 
@@ -68,7 +81,15 @@ export default function Dashboard() {
   const [selectedEventId, setSelectedEventId] = useState<string | 'all'>('all');
   const [showSalesModal, setShowSalesModal] = useState(false);
   const [showTeamModal, setShowTeamModal] = useState(false);
+  const [showPerformanceModal, setShowPerformanceModal] = useState(false);
   const [selectedTeamMember, setSelectedTeamMember] = useState<TeamMember | null>(null);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [activeMainTab, setActiveMainTab] = useState<'dashboard' | 'events' | 'team'>('dashboard');
+  
+  // Promotora selection state
+  const [selectedPromotora, setSelectedPromotora] = useState<string | null>(null);
+  const [showPromotoraSelector, setShowPromotoraSelector] = useState(true);
   
   // Get demo user level from sessionStorage
   const [userLevel, setUserLevel] = useState<1 | 2 | 3 | 4>(1);
@@ -78,7 +99,19 @@ export default function Dashboard() {
     if (storedLevel) {
       setUserLevel(parseInt(storedLevel) as 1 | 2 | 3 | 4);
     }
+    // Check if promotora was selected before
+    const storedPromotora = sessionStorage.getItem("selectedPromotora");
+    if (storedPromotora) {
+      setSelectedPromotora(storedPromotora);
+      setShowPromotoraSelector(false);
+    }
   }, []);
+
+  const handleSelectPromotora = (promotoraId: string) => {
+    setSelectedPromotora(promotoraId);
+    sessionStorage.setItem("selectedPromotora", promotoraId);
+    setShowPromotoraSelector(false);
+  };
 
   const user = demoUserData[userLevel] as typeof currentUsers.promotorComun;
   const hasTeam = userLevel >= 2;
@@ -86,16 +119,20 @@ export default function Dashboard() {
 
   // Get data based on selected event
   const getEventData = () => {
-    const ownSales = user.ownSales || { week: 0, month: 0, today: 0 };
-    const teamSales = 'teamSales' in user ? user.teamSales : { week: 0, month: 0 };
+    const ownSales = user.ownSales || { week: 0, month: 0, today: 0, total: 0 };
+    const teamSales = 'teamSales' in user ? user.teamSales : { week: 0, month: 0, today: 0, total: 0 };
     const commission = user.commissionPerTicket || 7500;
 
     if (selectedEventId === 'all') {
       return {
         salesWeek: ownSales.week,
         salesMonth: ownSales.month,
+        salesToday: ownSales.today || 0,
+        salesTotal: ownSales.total || ownSales.month * 3,
         teamSalesWeek: teamSales.week,
         teamSalesMonth: teamSales.month,
+        teamSalesToday: teamSales.today || 0,
+        teamSalesTotal: teamSales.total || teamSales.month * 3,
         commissionWeek: ownSales.week * commission,
         commissionMonth: ownSales.month * commission,
         chartData: weeklyChartData.map(d => ({
@@ -112,8 +149,12 @@ export default function Dashboard() {
     return {
       salesWeek: Math.floor(eventSalesData.ownSales * 0.3),
       salesMonth: eventSalesData.ownSales,
+      salesToday: Math.floor(eventSalesData.ownSales * 0.1),
+      salesTotal: eventSalesData.ownSales * 2,
       teamSalesWeek: Math.floor((teamSales.week || 0) * 0.3),
       teamSalesMonth: teamSales.month || 0,
+      teamSalesToday: Math.floor((teamSales.month || 0) * 0.1),
+      teamSalesTotal: (teamSales.month || 0) * 2,
       commissionWeek: Math.floor(eventSalesData.ownCommission * 0.3),
       commissionMonth: eventSalesData.ownCommission,
       chartData: eventChartData.map(d => ({
@@ -138,6 +179,21 @@ export default function Dashboard() {
 
   const levelInfo = getLevelInfo();
 
+  const handleEditMember = (member: TeamMember) => {
+    setEditingMember(member);
+    setShowEditModal(true);
+  };
+
+  const handleViewMember = (member: TeamMember) => {
+    setSelectedTeamMember(member);
+    setShowTeamModal(true);
+  };
+
+  // Show promotora selector first
+  if (showPromotoraSelector) {
+    return <PromotoraSelector onSelect={handleSelectPromotora} selectedId={selectedPromotora || undefined} />;
+  }
+
   return (
     <DashboardLayout 
       title="Dashboard" 
@@ -147,20 +203,51 @@ export default function Dashboard() {
       userLevel={userLevel}
     >
       <div className="space-y-6">
+        {/* Promotora Indicator */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-primary/10 via-card to-neon-blue/10 border border-primary/20"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-party">
+              <Building2 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Vendiendo para</p>
+              <p className="font-bold">NeonEvents Productions 🎉</p>
+            </div>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            onClick={() => setShowPromotoraSelector(true)}
+          >
+            Cambiar Promotora
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </motion.div>
+
         {/* Event Filter Banner */}
         {selectedEvent && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-between"
+            className="p-4 rounded-lg bg-neon-orange/10 border border-neon-orange/30 flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <TicketIcon className="w-5 h-5 text-primary" />
-              <span className="font-medium">Filtrando por: <span className="text-primary">{selectedEvent.name}</span></span>
+              <Flame className="w-5 h-5 text-neon-orange" />
+              <span className="font-medium">Filtrando por: <span className="text-neon-orange">{selectedEvent.name}</span></span>
             </div>
-            <span className="text-sm text-muted-foreground">
-              {selectedEvent.soldTickets.toLocaleString()} tickets vendidos
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                {selectedEvent.soldTickets.toLocaleString()} tickets vendidos
+              </span>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedEventId('all')}>
+                Ver Todos
+              </Button>
+            </div>
           </motion.div>
         )}
 
@@ -175,164 +262,101 @@ export default function Dashboard() {
           nextCommission={levelInfo.nextCommission}
         />
 
-        {/* Team Overview for Level 2+ */}
-        {hasTeam && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card variant="neon" className="p-6 border-2 border-primary/20">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/20">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">Mi Equipo</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {teamMembers?.length || 0} miembros directos • {eventData.teamSalesMonth} tickets del equipo
-                    </p>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="bg-success/20 text-success">
-                  +{eventData.teamSalesWeek} esta semana
-                </Badge>
-              </div>
+        {/* Main Content Tabs */}
+        <Tabs value={activeMainTab} onValueChange={(v) => setActiveMainTab(v as any)}>
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="dashboard" className="gap-2">
+              <LayoutDashboard className="w-4 h-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="events" className="gap-2">
+              <Calendar className="w-4 h-4" />
+              Mis Eventos
+            </TabsTrigger>
+            {hasTeam && (
+              <TabsTrigger value="team" className="gap-2">
+                <Users className="w-4 h-4" />
+                Mi Equipo
+              </TabsTrigger>
+            )}
+          </TabsList>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                {teamMembers?.slice(0, 4).map((member) => (
-                  <div 
-                    key={member.id}
-                    className="p-3 rounded-lg bg-card-elevated border border-border hover:border-primary/30 transition-all cursor-pointer"
-                    onClick={() => {
-                      setSelectedTeamMember(member);
-                      setShowTeamModal(true);
-                    }}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-gradient-party flex items-center justify-center text-white text-sm font-medium">
-                        {member.avatar}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{member.name}</p>
-                        <p className="text-xs text-muted-foreground">{member.levelName}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Ventas</span>
-                      <span className="font-semibold text-primary">{member.ownSales.month}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <Button 
-                variant="outline" 
-                className="w-full gap-2"
-                onClick={() => setShowTeamModal(true)}
-              >
-                <Eye className="w-4 h-4" />
-                Ver Equipo Completo
-              </Button>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* KPI Cards - Weekly Focus */}
-        <div className={`grid grid-cols-1 md:grid-cols-2 ${hasTeam ? 'lg:grid-cols-4' : 'lg:grid-cols-3 xl:grid-cols-6'} gap-4`}>
-          <KPICard
-            title="Mis Ventas Hoy"
-            value={user.ownSales?.today || 0}
-            trend={{ value: 20, isPositive: true }}
-            subtitle="vs ayer"
-            icon={TicketIcon}
-            iconColor="purple"
-            delay={0}
-          />
-          <KPICard
-            title="Mis Ventas Semana"
-            value={eventData.salesWeek}
-            trend={{ value: 15, isPositive: true }}
-            subtitle="ciclo actual"
-            icon={TrendingUp}
-            iconColor="pink"
-            delay={0.05}
-          />
-          {hasTeam && (
-            <KPICard
-              title="Ventas Equipo"
-              value={eventData.teamSalesMonth}
-              trend={{ value: 22, isPositive: true }}
-              subtitle="acumulado"
-              icon={Users}
-              iconColor="blue"
-              delay={0.1}
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard" className="mt-6 space-y-6">
+            {/* Advanced KPI Panel */}
+            <AdvancedKPIPanel
+              userLevel={userLevel}
+              selectedEventId={selectedEventId}
+              ownSales={{
+                today: eventData.salesToday,
+                week: eventData.salesWeek,
+                month: eventData.salesMonth,
+                total: eventData.salesTotal,
+              }}
+              teamSales={hasTeam ? {
+                today: eventData.teamSalesToday,
+                week: eventData.teamSalesWeek,
+                month: eventData.teamSalesMonth,
+                total: eventData.teamSalesTotal,
+              } : undefined}
+              commissionPerTicket={user.commissionPerTicket}
+              teamSize={teamMembers?.length || 0}
+              onViewMore={() => setShowPerformanceModal(true)}
             />
-          )}
-          <KPICard
-            title="Ventas Período"
-            value={eventData.salesMonth + (hasTeam ? eventData.teamSalesMonth : 0)}
-            trend={{ value: 8, isPositive: true }}
-            subtitle="últimos 15 días"
-            icon={Zap}
-            iconColor="blue"
-            delay={0.1}
-          />
-          <KPICard
-            title="Mi Comisión"
-            value={`$${(eventData.commissionMonth / 1000).toFixed(0)}K`}
-            trend={{ value: 25, isPositive: true }}
-            subtitle="COP"
-            icon={Wallet}
-            iconColor="green"
-            delay={0.15}
-          />
-          {hasTeam && (
-            <KPICard
-              title="Comisión Total"
-              value={`$${((eventData.commissionMonth + eventData.teamSalesMonth * user.commissionPerTicket * 0.1) / 1000).toFixed(0)}K`}
-              trend={{ value: 18, isPositive: true }}
-              subtitle="propia + equipo"
-              icon={Trophy}
-              iconColor="yellow"
-              delay={0.2}
-            />
-          )}
-          <KPICard
-            title="Próximo Cierre"
-            value="5 días"
-            subtitle="15 de Feb"
-            icon={Calendar}
-            iconColor="orange"
-            delay={0.25}
-          />
-        </div>
 
-        {/* Charts and Milestones Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <SalesChart 
-              data={eventData.chartData} 
-              title={hasTeam ? "Ventas Totales (Propias + Equipo)" : "Ventas por Semana"}
-              subtitle="Ciclos de 15 días"
+            {/* Charts and Milestones Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <SalesChart 
+                  data={eventData.chartData} 
+                  title={hasTeam ? "Ventas Totales (Propias + Equipo)" : "Ventas por Semana"}
+                  subtitle="Ciclos de 15 días"
+                  onSeeMore={() => setShowSalesModal(true)}
+                />
+              </div>
+              <div>
+                <MilestoneCard milestones={mockMilestones} />
+              </div>
+            </div>
+
+            {/* Recent Sales */}
+            <RecentSalesTable 
+              totalSales={user.ownSales?.month || 0} 
+              filterEventId={selectedEventId}
               onSeeMore={() => setShowSalesModal(true)}
             />
-          </div>
-          <div>
-            <MilestoneCard milestones={mockMilestones} />
-          </div>
-        </div>
+          </TabsContent>
 
-        {/* Recent Sales */}
-        <RecentSalesTable 
-          totalSales={user.ownSales?.month || 0} 
-          filterEventId={selectedEventId}
-          onSeeMore={() => setShowSalesModal(true)}
-        />
+          {/* Events Tab */}
+          <TabsContent value="events" className="mt-6">
+            <EventSegmentedView
+              userLevel={userLevel}
+              onEventSelect={setSelectedEventId}
+              selectedEventId={selectedEventId}
+              onViewEventDetails={(eventId) => {
+                setSelectedEventId(eventId);
+                setActiveMainTab('dashboard');
+              }}
+            />
+          </TabsContent>
+
+          {/* Team Tab (Level 2+) */}
+          {hasTeam && (
+            <TabsContent value="team" className="mt-6">
+              <TeamManagementPanel
+                userLevel={userLevel as 2 | 3 | 4}
+                teamMembers={teamMembers || []}
+                onEditMember={handleEditMember}
+                onViewMember={handleViewMember}
+                onAddMember={() => console.log("Add member")}
+                onManageStructure={() => console.log("Manage structure")}
+              />
+            </TabsContent>
+          )}
+        </Tabs>
       </div>
 
-      {/* Sales Detail Modal */}
+      {/* Modals */}
       <SalesDetailModal
         open={showSalesModal}
         onOpenChange={setShowSalesModal}
@@ -340,7 +364,6 @@ export default function Dashboard() {
         filterEventId={selectedEventId}
       />
 
-      {/* Team Detail Modal */}
       {hasTeam && (
         <TeamDetailModal
           open={showTeamModal}
@@ -349,6 +372,24 @@ export default function Dashboard() {
           title={selectedTeamMember ? `Detalle de ${selectedTeamMember.name}` : "Detalle del Equipo"}
         />
       )}
+
+      <SalesPerformanceModal
+        open={showPerformanceModal}
+        onOpenChange={setShowPerformanceModal}
+        member={user as TeamMember}
+        selectedEventId={selectedEventId}
+      />
+
+      {/* Member Edit Modal */}
+      <MemberEditModal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        member={editingMember}
+        editorLevel={userLevel}
+        availableSupervisors={teamMembers || []}
+        onSave={(member) => console.log("Save member:", member)}
+        onDelete={(id) => console.log("Delete member:", id)}
+      />
     </DashboardLayout>
   );
 }
