@@ -22,6 +22,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { savedTemplates, EventTemplate } from "@/data/eventTemplates";
 import { toast } from "sonner";
+import { TemplateEditorModal } from "@/components/admin/TemplateEditorModal";
 
 export default function AdminTemplates() {
   const navigate = useNavigate();
@@ -30,6 +31,8 @@ export default function AdminTemplates() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedTemplate, setSelectedTemplate] = useState<EventTemplate | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showEditorModal, setShowEditorModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<EventTemplate | null>(null);
 
   const filteredTemplates = templates.filter(t =>
     t.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -64,6 +67,17 @@ export default function AdminTemplates() {
   const handlePreview = (template: EventTemplate) => {
     setSelectedTemplate(template);
     setShowPreviewModal(true);
+  };
+
+  const handleEdit = (template: EventTemplate) => {
+    setEditingTemplate(template);
+    setShowEditorModal(true);
+  };
+
+  const handleSaveTemplate = (updatedTemplate: EventTemplate) => {
+    setTemplates(templates.map(t =>
+      t.id === updatedTemplate.id ? updatedTemplate : t
+    ));
   };
 
   return (
@@ -209,13 +223,20 @@ export default function AdminTemplates() {
                       Ver
                     </Button>
                     <Button 
-                      variant="outline" 
+                      variant="party" 
                       size="sm" 
                       className="flex-1"
+                      onClick={() => handleEdit(template)}
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      Editar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
                       onClick={() => handleDuplicate(template)}
                     >
-                      <Copy className="w-3 h-3 mr-1" />
-                      Duplicar
+                      <Copy className="w-3 h-3" />
                     </Button>
                     {!template.isDefault && (
                       <Button 
@@ -263,6 +284,10 @@ export default function AdminTemplates() {
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="icon" onClick={() => handlePreview(template)}>
                         <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="party" size="sm" className="gap-1" onClick={() => handleEdit(template)}>
+                        <Edit className="w-4 h-4" />
+                        Editar
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => handleDuplicate(template)}>
                         <Copy className="w-4 h-4" />
@@ -355,6 +380,14 @@ export default function AdminTemplates() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Template Editor Modal */}
+      <TemplateEditorModal
+        open={showEditorModal}
+        onOpenChange={setShowEditorModal}
+        template={editingTemplate}
+        onSave={handleSaveTemplate}
+      />
     </DashboardLayout>
   );
 }
