@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +18,6 @@ import {
   DollarSign, 
   Shield,
   Trash2,
-  UserPlus,
-  ChevronDown,
   Check,
   Headphones,
   AlertTriangle
@@ -61,12 +58,25 @@ export function MemberEditModal({
   onDelete
 }: MemberEditModalProps) {
   const [editForm, setEditForm] = useState({
-    name: member?.name || "",
-    level: member?.level || 1,
-    commissionPerTicket: member?.commissionPerTicket || 5000,
-    teamSize: member?.teamSize || 0,
+    name: "",
+    level: 1,
+    commissionPerTicket: 5000,
+    teamSize: 0,
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Update form when member changes
+  useEffect(() => {
+    if (member) {
+      setEditForm({
+        name: member.name,
+        level: member.level,
+        commissionPerTicket: member.commissionPerTicket,
+        teamSize: member.teamSize || 0,
+      });
+      setShowDeleteConfirm(false);
+    }
+  }, [member]);
 
   if (!member) return null;
 
