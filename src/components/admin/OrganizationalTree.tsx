@@ -19,14 +19,20 @@ import {
   Target,
   Trophy,
   BarChart3,
-  Headphones
+  Headphones,
+  Edit,
+  UserPlus,
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { organizationData, TeamMember, getTotalSales, getEventSales, events } from "@/data/mockData";
 import { SalesPerformanceModal } from "@/components/modals/SalesPerformanceModal";
+import { MemberEditModal } from "@/components/admin/MemberEditModal";
 
 interface OrganizationalTreeProps {
   selectedEventId?: string | 'all';
+  editorLevel?: number; // Level of the current user (for edit permissions)
+  showEditControls?: boolean;
 }
 
 const levelColors: Record<number, string> = {
@@ -49,12 +55,16 @@ interface TreeNodeProps {
   defaultExpanded?: boolean;
   selectedEventId: string | 'all';
   onViewDetails: (member: TeamMember) => void;
+  onEditMember?: (member: TeamMember) => void;
   maxSales: number;
+  editorLevel: number;
+  showEditControls: boolean;
 }
 
-function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId, onViewDetails, maxSales }: TreeNodeProps) {
+function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId, onViewDetails, onEditMember, maxSales, editorLevel, showEditControls }: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded || depth < 2);
   const hasChildren = member.children && member.children.length > 0;
+  const canEdit = editorLevel > member.level;
 
   // Get sales based on event filter
   const getDisplaySales = () => {
@@ -213,6 +223,22 @@ function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId,
           )}
         </div>
 
+        {/* Edit Button - only shown if user can edit this member */}
+        {showEditControls && canEdit && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-1 text-primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditMember?.(member);
+            }}
+          >
+            <Edit className="w-4 h-4" />
+            Editar
+          </Button>
+        )}
+
         {/* View Details Button */}
         <Button 
           variant="outline" 
@@ -242,7 +268,10 @@ function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId,
                 depth={depth + 1}
                 selectedEventId={selectedEventId}
                 onViewDetails={onViewDetails}
+                onEditMember={onEditMember}
                 maxSales={maxSales}
+                editorLevel={editorLevel}
+                showEditControls={showEditControls}
               />
             ))}
           </motion.div>
@@ -252,14 +281,31 @@ function TreeNode({ member, depth = 0, defaultExpanded = false, selectedEventId,
   );
 }
 
-export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTreeProps) {
+export function OrganizationalTree({ selectedEventId = 'all', editorLevel = 4, showEditControls = true }: OrganizationalTreeProps) {
   const [allExpanded, setAllExpanded] = useState(false);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleViewDetails = (member: TeamMember) => {
     setSelectedMember(member);
     setShowDetailModal(true);
+  };
+
+  const handleEditMember = (member: TeamMember) => {
+    setEditingMember(member);
+    setShowEditModal(true);
+  };
+
+  const handleSaveMember = (member: TeamMember) => {
+    // In a real app, this would update the database
+    console.log("Saving member:", member);
+  };
+
+  const handleDeleteMember = (memberId: string) => {
+    // In a real app, this would delete from the database
+    console.log("Deleting member:", memberId);
   };
 
   // Calculate max sales for performance comparison
@@ -438,7 +484,10 @@ export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTr
                   defaultExpanded={allExpanded}
                   selectedEventId={selectedEventId}
                   onViewDetails={handleViewDetails}
+                  onEditMember={handleEditMember}
                   maxSales={maxSales}
+                  editorLevel={editorLevel}
+                  showEditControls={showEditControls}
                 />
               ))}
             </div>
@@ -470,6 +519,16 @@ export function OrganizationalTree({ selectedEventId = 'all' }: OrganizationalTr
         onOpenChange={setShowDetailModal}
         member={selectedMember || undefined}
         selectedEventId={selectedEventId}
+      />
+
+      {/* Member Edit Modal */}
+      <MemberEditModal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        member={editingMember}
+        editorLevel={editorLevel}
+        onSave={handleSaveMember}
+        onDelete={handleDeleteMember}
       />
     </>
   );

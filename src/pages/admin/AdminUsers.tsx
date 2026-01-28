@@ -39,6 +39,7 @@ import { SalesPerformanceModal } from "@/components/modals/SalesPerformanceModal
 import { SalesDetailModal } from "@/components/modals/SalesDetailModal";
 import { LevelConfigurationModal } from "@/components/admin/LevelConfigurationModal";
 import { TemplateManagementModal } from "@/components/admin/TemplateManagementModal";
+import { MemberEditModal } from "@/components/admin/MemberEditModal";
 
 const levelColors: Record<number, string> = {
   1: "bg-neon-blue/20 text-neon-blue border-neon-blue/30",
@@ -51,12 +52,15 @@ interface GlobalTreeNodeProps {
   member: TeamMember;
   depth?: number;
   onViewDetails: (member: TeamMember) => void;
+  onEditMember: (member: TeamMember) => void;
   maxSales: number;
+  editorLevel: number;
 }
 
-function GlobalTreeNode({ member, depth = 0, onViewDetails, maxSales }: GlobalTreeNodeProps) {
+function GlobalTreeNode({ member, depth = 0, onViewDetails, onEditMember, maxSales, editorLevel }: GlobalTreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(depth < 2);
   const hasChildren = member.children && member.children.length > 0;
+  const canEdit = editorLevel > member.level;
 
   const totalSales = getTotalSales(member, 'total');
   const monthSales = getTotalSales(member, 'month');
@@ -164,6 +168,22 @@ function GlobalTreeNode({ member, depth = 0, onViewDetails, maxSales }: GlobalTr
           </div>
         </div>
 
+        {/* Edit Button */}
+        {canEdit && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-1 text-primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditMember(member);
+            }}
+          >
+            <Edit className="w-4 h-4" />
+            Editar
+          </Button>
+        )}
+
         <Button 
           variant="outline" 
           size="sm" 
@@ -189,7 +209,9 @@ function GlobalTreeNode({ member, depth = 0, onViewDetails, maxSales }: GlobalTr
               member={child} 
               depth={depth + 1}
               onViewDetails={onViewDetails}
+              onEditMember={onEditMember}
               maxSales={maxSales}
+              editorLevel={editorLevel}
             />
           ))}
         </motion.div>
@@ -207,11 +229,27 @@ export default function AdminUsers() {
   const [showSalesModal, setShowSalesModal] = useState(false);
   const [showLevelConfigModal, setShowLevelConfigModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const editorLevel = 4; // Current user is Socio level
   const navigate = useNavigate();
 
   const handleViewDetails = (member: TeamMember) => {
     setSelectedMember(member);
     setShowDetailModal(true);
+  };
+
+  const handleEditMember = (member: TeamMember) => {
+    setEditingMember(member);
+    setShowEditModal(true);
+  };
+
+  const handleSaveMember = (member: TeamMember) => {
+    console.log("Saving member:", member);
+  };
+
+  const handleDeleteMember = (memberId: string) => {
+    console.log("Deleting member:", memberId);
   };
 
   // Calculate max sales for performance comparison
@@ -401,7 +439,9 @@ export default function AdminUsers() {
                       key={subSocio.id} 
                       member={subSocio} 
                       onViewDetails={handleViewDetails}
+                      onEditMember={handleEditMember}
                       maxSales={maxSales}
+                      editorLevel={editorLevel}
                     />
                   ))}
                 </div>
@@ -627,6 +667,16 @@ export default function AdminUsers() {
       <TemplateManagementModal
         open={showTemplateModal}
         onOpenChange={setShowTemplateModal}
+      />
+
+      {/* Member Edit Modal */}
+      <MemberEditModal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        member={editingMember}
+        editorLevel={editorLevel}
+        onSave={handleSaveMember}
+        onDelete={handleDeleteMember}
       />
     </DashboardLayout>
   );
