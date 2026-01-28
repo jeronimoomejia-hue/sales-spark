@@ -1,36 +1,32 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { RosterInvitationModal } from "@/components/admin/RosterInvitationModal";
+import { HierarchicalRosterView } from "@/components/admin/HierarchicalRosterView";
 import { 
   Users, 
   UserPlus,
   Save,
-  RotateCcw,
   Copy,
-  Trash2,
   Search,
   Star,
-  TrendingUp,
-  ChevronRight,
-  GripVertical,
   Check,
-  X,
   Link2,
   Share2,
-  Bell
+  Bell,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { events } from "@/data/mockData";
 import { 
   registeredSellers, 
   savedTemplates, 
-  eventAssignments, 
   getEventAssignment,
   SellerRoster,
   EventTemplate
@@ -50,8 +46,8 @@ export default function AdminEventRoster() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showInvitationModal, setShowInvitationModal] = useState(false);
   const [templateName, setTemplateName] = useState("");
-  const [draggedSeller, setDraggedSeller] = useState<SellerRoster | null>(null);
   const [rosterActivated, setRosterActivated] = useState(assignment?.status === 'active');
+  const [viewMode, setViewMode] = useState<'hierarchy' | 'grid'>('hierarchy');
   
   const availableSellers = registeredSellers.filter(
     s => s.status === 'active' && !roster.find(r => r.sellerId === s.sellerId)
@@ -61,6 +57,7 @@ export default function AdminEventRoster() {
     s.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const subsocios = roster.filter(s => s.position === 'subsocio');
   const cabezas = roster.filter(s => s.position === 'cabeza');
   const promotores = roster.filter(s => s.position === 'promotor');
 
@@ -70,13 +67,16 @@ export default function AdminEventRoster() {
   };
 
   const handleRemoveFromRoster = (sellerId: string) => {
-    setRoster(roster.filter(s => s.sellerId !== sellerId));
+    // Also remove assignments to this seller
+    setRoster(roster.filter(s => s.sellerId !== sellerId).map(s => 
+      s.assignedTo === sellerId ? { ...s, assignedTo: undefined } : s
+    ));
     toast.info("Vendedor removido de la alineación");
   };
 
-  const handleAssignToCabeza = (promotorId: string, cabezaId: string) => {
+  const handleAssignToParent = (sellerId: string, parentId: string | undefined) => {
     setRoster(roster.map(s => 
-      s.sellerId === promotorId ? { ...s, assignedTo: cabezaId } : s
+      s.sellerId === sellerId ? { ...s, assignedTo: parentId } : s
     ));
   };
 
@@ -121,7 +121,7 @@ export default function AdminEventRoster() {
       <div className="space-y-6">
         {/* Header Actions */}
         <div className="flex flex-wrap gap-3 items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Badge variant={rosterActivated ? 'default' : 'outline'} className="gap-1">
               {rosterActivated ? (
                 <><Check className="w-3 h-3" /> Activa</>
@@ -130,14 +130,31 @@ export default function AdminEventRoster() {
               )}
             </Badge>
             <span className="text-sm text-muted-foreground">
-              {roster.length} vendedores • {cabezas.length} cabezas
+              {roster.length} vendedores • {subsocios.length} sub socios • {cabezas.length} cabezas • {promotores.length} promotores
             </span>
           </div>
-            <span className="text-sm text-muted-foreground">
-              {roster.length} vendedores • {cabezas.length} cabezas
-            </span>
-          </div>
-          <div className="flex gap-2">
+          
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle */}
+            <div className="flex items-center border rounded-lg p-1">
+              <Button 
+                variant={viewMode === 'hierarchy' ? 'secondary' : 'ghost'} 
+                size="sm"
+                className="h-7 px-2"
+                onClick={() => setViewMode('hierarchy')}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant={viewMode === 'grid' ? 'secondary' : 'ghost'} 
+                size="sm"
+                className="h-7 px-2"
+                onClick={() => setViewMode('grid')}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+            </div>
+            
             <Button variant="outline" size="sm" onClick={() => setShowShareModal(true)}>
               <Share2 className="w-4 h-4 mr-2" />
               Invitar Vendedores
@@ -199,9 +216,6 @@ export default function AdminEventRoster() {
                   layout
                   className="p-3 rounded-lg bg-card-elevated border border-border hover:border-primary/30 transition-all cursor-pointer group"
                   onClick={() => handleAddToRoster(seller)}
-                  draggable
-                  onDragStart={() => setDraggedSeller(seller)}
-                  onDragEnd={() => setDraggedSeller(null)}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-party flex items-center justify-center text-white font-bold text-sm">
@@ -233,7 +247,7 @@ export default function AdminEventRoster() {
             </div>
           </Card>
 
-          {/* Current Roster - Ultimate Team Style */}
+          {/* Current Roster - Hierarchical View */}
           <div className="lg:col-span-2">
             <Card variant="neon" className="p-6 min-h-[600px] relative overflow-hidden">
               {/* Field Background Pattern */}
@@ -248,147 +262,54 @@ export default function AdminEventRoster() {
                     🏟️ Alineación Actual
                   </h3>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>Formación: {cabezas.length}-{promotores.length}</span>
+                    <span>Formación: {subsocios.length}-{cabezas.length}-{promotores.length}</span>
                   </div>
                 </div>
 
-                {/* Cabezas Row */}
-                <div className="mb-8">
-                  <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-neon-purple" />
-                    CABEZAS DE EQUIPO
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {cabezas.map((seller) => (
-                      <motion.div
-                        key={seller.sellerId}
-                        layout
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="relative group"
-                      >
-                        <Card className="p-4 bg-gradient-to-br from-neon-purple/20 to-neon-pink/10 border-neon-purple/30 hover:border-neon-purple/60 transition-all">
-                          <button
-                            onClick={() => handleRemoveFromRoster(seller.sellerId)}
-                            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                          <div className="text-center">
-                            <div className="w-14 h-14 mx-auto rounded-full bg-gradient-party flex items-center justify-center text-white font-bold text-lg mb-2 ring-2 ring-neon-purple/50">
-                              {seller.avatar}
-                            </div>
-                            <p className="font-semibold text-sm">{seller.name}</p>
-                            <Badge variant="secondary" className="mt-1 text-xs">
-                              {seller.levelName}
-                            </Badge>
-                            <div className="mt-2 flex items-center justify-center gap-1 text-xs text-success">
-                              <TrendingUp className="w-3 h-3" />
-                              {seller.stats.avgPerEvent}/evento
-                            </div>
-                          </div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                    
-                    {/* Add Cabeza Slot */}
-                    {cabezas.length < 4 && (
-                      <div 
-                        className="border-2 border-dashed border-border/50 rounded-xl p-4 flex items-center justify-center min-h-[140px] hover:border-primary/30 transition-colors cursor-pointer"
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => {
-                          if (draggedSeller && draggedSeller.position === 'cabeza') {
-                            handleAddToRoster(draggedSeller);
-                          }
-                        }}
-                      >
-                        <div className="text-center text-muted-foreground">
-                          <UserPlus className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                          <p className="text-xs">Añadir Cabeza</p>
-                        </div>
-                      </div>
-                    )}
+                {roster.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                    <Users className="w-16 h-16 mb-4 opacity-30" />
+                    <p className="text-lg font-medium">No hay vendedores en la alineación</p>
+                    <p className="text-sm mt-1">Añade vendedores desde el panel izquierdo o carga una plantilla</p>
                   </div>
-                </div>
-
-                {/* Promotores Row */}
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-neon-blue" />
-                    PROMOTORES
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                    {promotores.map((seller) => (
-                      <motion.div
-                        key={seller.sellerId}
-                        layout
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="relative group"
-                      >
-                        <Card className="p-3 bg-gradient-to-br from-neon-blue/20 to-cyan-500/10 border-neon-blue/30 hover:border-neon-blue/60 transition-all">
-                          <button
-                            onClick={() => handleRemoveFromRoster(seller.sellerId)}
-                            className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                          <div className="text-center">
-                            <div className="w-10 h-10 mx-auto rounded-full bg-gradient-party flex items-center justify-center text-white font-bold text-sm mb-1">
-                              {seller.avatar}
-                            </div>
-                            <p className="font-medium text-xs truncate">{seller.name}</p>
-                            {seller.assignedTo && (
-                              <p className="text-[10px] text-muted-foreground truncate">
-                                → {cabezas.find(c => c.sellerId === seller.assignedTo)?.name || 'Sin asignar'}
-                              </p>
-                            )}
-                          </div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                    
-                    {/* Add Promotor Slots */}
-                    {Array.from({ length: Math.max(0, 5 - promotores.length) }).map((_, i) => (
-                      <div 
-                        key={i}
-                        className="border-2 border-dashed border-border/30 rounded-lg p-3 flex items-center justify-center min-h-[90px] hover:border-primary/20 transition-colors cursor-pointer"
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => {
-                          if (draggedSeller && draggedSeller.position === 'promotor') {
-                            handleAddToRoster(draggedSeller);
-                          }
-                        }}
-                      >
-                        <UserPlus className="w-5 h-5 text-muted-foreground/30" />
-                      </div>
-                    ))}
+                ) : (
+                  <div className="max-h-[500px] overflow-y-auto pr-2">
+                    <HierarchicalRosterView
+                      roster={roster}
+                      onRemove={handleRemoveFromRoster}
+                      onAssign={handleAssignToParent}
+                      availableSellers={availableSellers}
+                      onAddSeller={handleAddToRoster}
+                    />
                   </div>
-                </div>
+                )}
 
                 {/* Stats Summary */}
-                <div className="mt-8 pt-6 border-t border-border grid grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-primary">{roster.length}</p>
-                    <p className="text-xs text-muted-foreground">Total Vendedores</p>
+                {roster.length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-border grid grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-primary">{roster.length}</p>
+                      <p className="text-xs text-muted-foreground">Total Vendedores</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-success">
+                        {roster.reduce((sum, s) => sum + s.stats.avgPerEvent, 0)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Ventas Proyectadas</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-warning">
+                        {Math.round(roster.reduce((sum, s) => sum + s.stats.successRate, 0) / (roster.length || 1))}%
+                      </p>
+                      <p className="text-xs text-muted-foreground">Tasa de Éxito Prom.</p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-success">
-                      {roster.reduce((sum, s) => sum + s.stats.avgPerEvent, 0)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Ventas Proyectadas</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-warning">
-                      {Math.round(roster.reduce((sum, s) => sum + s.stats.successRate, 0) / (roster.length || 1))}%
-                    </p>
-                    <p className="text-xs text-muted-foreground">Tasa de Éxito Prom.</p>
-                  </div>
-                </div>
+                )}
               </div>
             </Card>
           </div>
         </div>
+      </div>
 
       {/* Load Template Modal */}
       <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
