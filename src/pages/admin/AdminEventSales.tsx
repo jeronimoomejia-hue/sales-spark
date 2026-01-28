@@ -558,12 +558,17 @@ export default function AdminEventSales() {
     setShowEditModal(true);
   };
 
-  const handleSaveMember = (member: TeamMember) => {
-    console.log("Saving member:", member);
+  const handleSaveMember = (member: TeamMember, newParentId?: string) => {
+    console.log("Saving member:", member, "New parent:", newParentId);
   };
 
   const handleDeleteMember = (memberId: string) => {
     console.log("Deleting member:", memberId);
+  };
+
+  // Get available supervisors for a given level
+  const getAvailableSupervisors = (forLevel: number): TeamMember[] => {
+    return allMembers.filter(m => m.level === forLevel + 1);
   };
 
   return (
@@ -864,6 +869,7 @@ export default function AdminEventSales() {
         onOpenChange={setShowEditModal}
         member={editingMember}
         editorLevel={editorLevel}
+        availableSupervisors={editingMember ? getAvailableSupervisors(editingMember.level) : []}
         onSave={handleSaveMember}
         onDelete={handleDeleteMember}
       />

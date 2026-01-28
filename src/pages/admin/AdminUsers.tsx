@@ -244,12 +244,26 @@ export default function AdminUsers() {
     setShowEditModal(true);
   };
 
-  const handleSaveMember = (member: TeamMember) => {
-    console.log("Saving member:", member);
+  const handleSaveMember = (member: TeamMember, newParentId?: string) => {
+    console.log("Saving member:", member, "New parent:", newParentId);
+    // In a real app, this would update the database and reorganize the hierarchy
   };
 
   const handleDeleteMember = (memberId: string) => {
     console.log("Deleting member:", memberId);
+  };
+
+  // Collect all members by level for supervisor assignment
+  const collectMembersByLevel = (member: TeamMember, collection: TeamMember[] = []): TeamMember[] => {
+    collection.push(member);
+    member.children?.forEach(child => collectMembersByLevel(child, collection));
+    return collection;
+  };
+  
+  const allMembers = collectMembersByLevel(organizationData);
+  const getAvailableSupervisors = (forLevel: number): TeamMember[] => {
+    // Supervisors should be at the level above
+    return allMembers.filter(m => m.level === forLevel + 1);
   };
 
   // Calculate max sales for performance comparison
@@ -675,6 +689,7 @@ export default function AdminUsers() {
         onOpenChange={setShowEditModal}
         member={editingMember}
         editorLevel={editorLevel}
+        availableSupervisors={editingMember ? getAvailableSupervisors(editingMember.level) : []}
         onSave={handleSaveMember}
         onDelete={handleDeleteMember}
       />
