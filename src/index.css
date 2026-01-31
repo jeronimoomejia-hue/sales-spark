@@ -2,32 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    /* Base Colors - Deep Dark Theme */
-    --background: 240 15% 4%;
-    --foreground: 0 0% 100%;
+    /* Mensualista Light Theme - Clean, Premium, Corporate */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 5%;
 
-    --card: 240 12% 8%;
-    --card-foreground: 0 0% 100%;
-    --card-elevated: 240 10% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+    --card-elevated: 0 0% 98%;
 
-    --popover: 240 12% 8%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
 
-    --primary: 270 91% 65%;
+    /* Mensualista Orange - Primary */
+    --primary: 24 95% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 10% 16%;
-    --secondary-foreground: 240 5% 70%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 30%;
 
-    --muted: 240 8% 14%;
-    --muted-foreground: 240 5% 55%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 330 85% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 5%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -41,13 +42,21 @@
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
-    --border: 240 8% 18%;
-    --input: 240 8% 18%;
-    --ring: 270 91% 65%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 24 95% 53%;
 
     --radius: 0.75rem;
 
-    /* Neon Accent Colors */
+    /* Mensualista Brand Colors */
+    --mensualista-orange: 24 95% 53%;
+    --mensualista-orange-light: 24 95% 60%;
+    --mensualista-orange-dark: 24 95% 45%;
+    --mensualista-black: 0 0% 5%;
+    --mensualista-white: 0 0% 100%;
+    --mensualista-gray: 0 0% 45%;
+
+    /* Crews Neon Accents (secondary energy) */
     --neon-purple: 270 91% 65%;
     --neon-pink: 330 85% 60%;
     --neon-blue: 217 91% 60%;
@@ -56,25 +65,54 @@
     --neon-orange: 25 95% 53%;
 
     /* Gradients */
+    --gradient-mensualista: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(24 95% 45%) 100%);
     --gradient-party: linear-gradient(135deg, hsl(270 91% 65%) 0%, hsl(330 85% 60%) 50%, hsl(25 95% 53%) 100%);
+    --gradient-crews: linear-gradient(135deg, hsl(270 91% 65%) 0%, hsl(330 85% 60%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(217 91% 60%) 100%);
     --gradient-premium: linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(25 95% 53%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(270 91% 65% / 0.15) 0%, transparent 70%);
+    --gradient-cta: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(270 91% 65%) 100%);
 
-    /* Shadows with glow */
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
     --shadow-glow-purple: 0 0 20px hsl(270 91% 65% / 0.3), 0 0 40px hsl(270 91% 65% / 0.1);
     --shadow-glow-pink: 0 0 20px hsl(330 85% 60% / 0.3), 0 0 40px hsl(330 85% 60% / 0.1);
+    --shadow-glow-orange: 0 0 20px hsl(24 95% 53% / 0.3), 0 0 40px hsl(24 95% 53% / 0.1);
     --shadow-glow-success: 0 0 20px hsl(160 84% 39% / 0.3);
 
-    /* Sidebar */
-    --sidebar-background: 240 12% 6%;
-    --sidebar-foreground: 240 5% 70%;
-    --sidebar-primary: 270 91% 65%;
+    /* Sidebar (for dark panels) */
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 70%;
+    --sidebar-primary: 24 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 10% 12%;
+    --sidebar-accent: 0 0% 12%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 240 8% 14%;
-    --sidebar-ring: 270 91% 65%;
+    --sidebar-border: 0 0% 14%;
+    --sidebar-ring: 24 95% 53%;
+  }
+
+  /* Crews Dark Mode (for Crews section) */
+  .crews-mode {
+    --background: 240 15% 4%;
+    --foreground: 0 0% 100%;
+    --card: 240 12% 8%;
+    --card-foreground: 0 0% 100%;
+    --card-elevated: 240 10% 12%;
+    --popover: 240 12% 8%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 270 91% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 10% 16%;
+    --secondary-foreground: 240 5% 70%;
+    --muted: 240 8% 14%;
+    --muted-foreground: 240 5% 55%;
+    --accent: 330 85% 60%;
+    --accent-foreground: 0 0% 100%;
+    --border: 240 8% 18%;
+    --input: 240 8% 18%;
+    --ring: 270 91% 65%;
   }
 }
 
@@ -89,22 +127,23 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Poppins', sans-serif;
-  }
-
-  code, .mono {
-    font-family: 'Fira Code', monospace;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
   }
 }
 
 @layer utilities {
   /* Glassmorphism */
   .glass {
-    @apply bg-card/60 backdrop-blur-xl border border-white/5;
+    @apply bg-white/60 backdrop-blur-xl border border-black/5;
+  }
+
+  .glass-dark {
+    @apply bg-black/60 backdrop-blur-xl border border-white/5;
   }
 
   .glass-elevated {
-    @apply bg-card-elevated/80 backdrop-blur-xl border border-white/10;
+    @apply bg-white/80 backdrop-blur-xl border border-black/10;
   }
 
   /* Glow effects */
@@ -116,13 +155,31 @@
     box-shadow: var(--shadow-glow-pink);
   }
 
+  .glow-orange {
+    box-shadow: var(--shadow-glow-orange);
+  }
+
   .glow-success {
     box-shadow: var(--shadow-glow-success);
   }
 
   /* Gradient text */
+  .text-gradient-mensualista {
+    background: var(--gradient-mensualista);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   .text-gradient-party {
     background: var(--gradient-party);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-crews {
+    background: var(--gradient-crews);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -136,8 +193,16 @@
   }
 
   /* Gradient backgrounds */
+  .bg-gradient-mensualista {
+    background: var(--gradient-mensualista);
+  }
+
   .bg-gradient-party {
     background: var(--gradient-party);
+  }
+
+  .bg-gradient-crews {
+    background: var(--gradient-crews);
   }
 
   .bg-gradient-success {
@@ -146,6 +211,10 @@
 
   .bg-gradient-premium {
     background: var(--gradient-premium);
+  }
+
+  .bg-gradient-cta {
+    background: var(--gradient-cta);
   }
 
   /* Animated gradient border */
@@ -169,7 +238,30 @@
     mask-composite: exclude;
   }
 
-  /* Neon underline animation */
+  /* Underline animation */
+  .hover-underline {
+    position: relative;
+  }
+
+  .hover-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: hsl(var(--primary));
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+  }
+
+  .hover-underline:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* Neon underline */
   .neon-underline {
     position: relative;
   }
@@ -181,7 +273,7 @@
     left: 0;
     width: 100%;
     height: 2px;
-    background: var(--gradient-party);
+    background: var(--gradient-crews);
     transform: scaleX(0);
     transform-origin: right;
     transition: transform 0.3s ease;
@@ -234,6 +326,26 @@
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
+
+  /* Subtle hover lift */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+  }
 }
 
 /* Custom scrollbar */
@@ -257,6 +369,6 @@
 
 /* Selection */
 ::selection {
-  background: hsl(var(--primary) / 0.3);
+  background: hsl(var(--primary) / 0.2);
   color: hsl(var(--foreground));
 }

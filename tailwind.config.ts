@@ -15,8 +15,6 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        display: ['Poppins', 'sans-serif'],
-        mono: ['Fira Code', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -64,6 +62,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
           elevated: "hsl(var(--card-elevated))",
+        },
+        mensualista: {
+          orange: "hsl(var(--mensualista-orange))",
+          "orange-light": "hsl(var(--mensualista-orange-light))",
+          "orange-dark": "hsl(var(--mensualista-orange-dark))",
+          black: "hsl(var(--mensualista-black))",
+          white: "hsl(var(--mensualista-white))",
+          gray: "hsl(var(--mensualista-gray))",
         },
         neon: {
           purple: "hsl(var(--neon-purple))",
@@ -114,6 +120,10 @@ export default {
           from: { transform: "translateX(100%)" },
           to: { transform: "translateX(0)" },
         },
+        "slide-up": {
+          from: { transform: "translateY(20px)", opacity: "0" },
+          to: { transform: "translateY(0)", opacity: "1" },
+        },
         "glow-pulse": {
           "0%, 100%": { 
             boxShadow: "0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.1)" 
@@ -130,10 +140,11 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
+        "fade-in": "fade-in 0.4s ease-out",
         "fade-out": "fade-out 0.3s ease-out",
         "scale-in": "scale-in 0.2s ease-out",
         "slide-in-right": "slide-in-right 0.3s ease-out",
+        "slide-up": "slide-up 0.5s ease-out",
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
         "count-up": "count-up 0.5s ease-out",
       },
