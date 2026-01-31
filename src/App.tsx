@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import MensualistaLanding from "./pages/MensualistaLanding";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -38,9 +39,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Landing />} />
+          {/* Mensualista Main Landing */}
+          <Route path="/" element={<MensualistaLanding />} />
+          
+          {/* Product Landings */}
+          <Route path="/servicios" element={<MensualistaLanding />} />
+          <Route path="/crews" element={<Landing />} />
+          <Route path="/empresas" element={<MensualistaLanding />} />
+          <Route path="/crews/empresas" element={<Landing />} />
+          
+          {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Login />} />
           
           {/* Seller Dashboard Routes */}
           <Route path="/dashboard" element={<Dashboard />} />
