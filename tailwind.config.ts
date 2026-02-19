@@ -63,13 +63,13 @@ export default {
           foreground: "hsl(var(--card-foreground))",
           elevated: "hsl(var(--card-elevated))",
         },
-        mensualista: {
-          orange: "hsl(var(--mensualista-orange))",
-          "orange-light": "hsl(var(--mensualista-orange-light))",
-          "orange-dark": "hsl(var(--mensualista-orange-dark))",
-          black: "hsl(var(--mensualista-black))",
-          white: "hsl(var(--mensualista-white))",
-          gray: "hsl(var(--mensualista-gray))",
+        "crews-brand": {
+          orange: "hsl(var(--crews-orange))",
+          "orange-light": "hsl(var(--crews-orange-light))",
+          "orange-dark": "hsl(var(--crews-orange-dark))",
+          black: "hsl(var(--crews-black))",
+          white: "hsl(var(--crews-white))",
+          gray: "hsl(var(--crews-gray))",
         },
         neon: {
           purple: "hsl(var(--neon-purple))",

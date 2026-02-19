@@ -2,8 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import MensualistaLanding from "./pages/MensualistaLanding";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -40,14 +39,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Mensualista Main Landing */}
-          <Route path="/" element={<MensualistaLanding />} />
+          {/* CREWS Main Landing */}
+          <Route path="/" element={<Landing />} />
           
-          {/* Product Landings */}
-          <Route path="/servicios" element={<MensualistaLanding />} />
-          <Route path="/crews" element={<Landing />} />
-          <Route path="/empresas" element={<MensualistaLanding />} />
-          <Route path="/crews/empresas" element={<Landing />} />
+          {/* Legacy routes redirect to CREWS */}
+          <Route path="/servicios" element={<Navigate to="/" replace />} />
+          <Route path="/empresas" element={<Navigate to="/" replace />} />
+          <Route path="/crews" element={<Navigate to="/" replace />} />
+          <Route path="/crews/empresas" element={<Navigate to="/" replace />} />
           
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
@@ -80,7 +79,7 @@ const App = () => (
           <Route path="/admin/integrations" element={<AdminIntegrations />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
           
-          {/* Legacy Routes (redirect or keep for compatibility) */}
+          {/* Legacy Routes */}
           <Route path="/admin/milestones" element={<AdminMilestones />} />
           <Route path="/admin/closures" element={<AdminClosures />} />
           <Route path="/admin/commissions" element={<AdminCommissions />} />
