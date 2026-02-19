@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Mensualista Light Theme - Clean, Premium, Corporate */
+    /* CREWS Light Theme */
     --background: 0 0% 100%;
     --foreground: 0 0% 5%;
 
@@ -17,7 +17,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 5%;
 
-    /* Mensualista Orange - Primary */
+    /* CREWS Orange - Primary */
     --primary: 24 95% 53%;
     --primary-foreground: 0 0% 100%;
 
@@ -48,13 +48,13 @@
 
     --radius: 0.75rem;
 
-    /* Mensualista Brand Colors */
-    --mensualista-orange: 24 95% 53%;
-    --mensualista-orange-light: 24 95% 60%;
-    --mensualista-orange-dark: 24 95% 45%;
-    --mensualista-black: 0 0% 5%;
-    --mensualista-white: 0 0% 100%;
-    --mensualista-gray: 0 0% 45%;
+    /* CREWS Brand Colors */
+    --crews-orange: 24 95% 53%;
+    --crews-orange-light: 24 95% 60%;
+    --crews-orange-dark: 24 95% 45%;
+    --crews-black: 0 0% 5%;
+    --crews-white: 0 0% 100%;
+    --crews-gray: 0 0% 45%;
 
     /* Crews Neon Accents (secondary energy) */
     --neon-purple: 270 91% 65%;
@@ -65,7 +65,7 @@
     --neon-orange: 25 95% 53%;
 
     /* Gradients */
-    --gradient-mensualista: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(24 95% 45%) 100%);
+    --gradient-crews-brand: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(24 95% 45%) 100%);
     --gradient-party: linear-gradient(135deg, hsl(270 91% 65%) 0%, hsl(330 85% 60%) 50%, hsl(25 95% 53%) 100%);
     --gradient-crews: linear-gradient(135deg, hsl(270 91% 65%) 0%, hsl(330 85% 60%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(217 91% 60%) 100%);
@@ -164,8 +164,8 @@
   }
 
   /* Gradient text */
-  .text-gradient-mensualista {
-    background: var(--gradient-mensualista);
+  .text-gradient-crews-brand {
+    background: var(--gradient-crews-brand);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -193,8 +193,8 @@
   }
 
   /* Gradient backgrounds */
-  .bg-gradient-mensualista {
-    background: var(--gradient-mensualista);
+  .bg-gradient-crews-brand {
+    background: var(--gradient-crews-brand);
   }
 
   .bg-gradient-party {
