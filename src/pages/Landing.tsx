@@ -109,14 +109,14 @@ export default function Landing() {
             </div>
             <span className="text-2xl font-bold font-display text-gradient-party">CREWS</span>
           </motion.div>
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-            <a href="#promotoras" className="hover:text-foreground transition-colors">Promotoras</a>
-            <a href="#vendedores" className="hover:text-foreground transition-colors">Vendedores</a>
-            <a href="#como-funciona" className="hover:text-foreground transition-colors">Cómo funciona</a>
-            <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="hidden md:flex items-center gap-6 text-sm text-gray-400">
+            <a href="#promotoras" className="hover:text-white transition-colors">Promotoras</a>
+            <a href="#vendedores" className="hover:text-white transition-colors">Vendedores</a>
+            <a href="#como-funciona" className="hover:text-white transition-colors">Cómo funciona</a>
+            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>Iniciar sesión</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="text-gray-300 hover:text-white">Iniciar sesión</Button>
             <Button variant="party" size="sm" onClick={() => navigate("/register")} className="gap-2">
               <Rocket className="w-4 h-4" />
               Registrarse
@@ -134,19 +134,19 @@ export default function Landing() {
 
         <div className="relative z-10 text-center max-w-5xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm bg-primary/20 border-primary/30">
+            <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm bg-primary/20 border-primary/30 text-white">
               <Shield className="w-3.5 h-3.5 mr-2" /> Vendedores formalizados • Pagos 100% virtuales
             </Badge>
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold font-display mb-6 leading-tight">
+            className="text-5xl md:text-7xl font-bold font-display mb-6 leading-tight text-white">
             Tu red de vendedores,{" "}
             <span className="text-gradient-party">formalizada y bajo control</span>
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto">
+            className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto">
             CREWS convierte el caos de vender boletas en un sistema organizado, legal y 100% virtual.
             Para promotoras que quieren control. Para vendedores que quieren crecer.
           </motion.p>
@@ -158,46 +158,48 @@ export default function Landing() {
               Registrar mi red
               <ArrowRight className="w-5 h-5" />
             </Button>
-            <Button variant="outline" size="xl" onClick={scrollToSellers} className="gap-2 text-lg border-primary/30 hover:bg-primary/10">
+            <Button variant="outline" size="xl" onClick={scrollToSellers} className="gap-2 text-lg border-white/30 text-white hover:bg-white/10">
               <Ticket className="w-5 h-5" />
               Quiero ser vendedor
               <ArrowDown className="w-5 h-5" />
             </Button>
           </motion.div>
 
-          {/* Hierarchy visual */}
+          {/* Hierarchy visual — ENHANCED */}
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-12 max-w-2xl mx-auto">
-            <Card variant="glass" className="p-6 glass-dark">
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-full bg-neon-pink/30 flex items-center justify-center text-sm font-bold border border-neon-pink/50">S</div>
-                  <span className="text-sm text-muted-foreground">Socio — $17,500/ticket</span>
-                </div>
-                <div className="w-px h-4 bg-border" />
-                <div className="flex items-center gap-6">
-                  {["SS", "SS"].map((label, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-neon-orange/30 flex items-center justify-center text-xs font-bold border border-neon-orange/50">{label}</div>
-                      <span className="text-xs text-muted-foreground">$15K</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="w-px h-4 bg-border" />
-                <div className="flex items-center gap-4 flex-wrap justify-center">
-                  {["C", "C", "C", "C"].map((label, i) => (
-                    <div key={i} className="w-7 h-7 rounded-full bg-neon-purple/30 flex items-center justify-center text-xs font-bold border border-neon-purple/50">{label}</div>
-                  ))}
-                </div>
-                <div className="w-px h-4 bg-border" />
-                <div className="flex items-center gap-3 flex-wrap justify-center">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="w-6 h-6 rounded-full bg-neon-blue/30 flex items-center justify-center text-[10px] font-bold border border-neon-blue/50">P</div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">Estructura jerárquica con comisiones por nivel</p>
-              </div>
-            </Card>
+            className="mt-16 max-w-3xl mx-auto">
+            <h3 className="text-lg font-semibold text-white mb-6 text-center">Estructura jerárquica con comisiones por nivel</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              {/* Socio */}
+              <motion.div whileHover={{ scale: 1.05 }} className="relative p-5 rounded-2xl border border-neon-pink/40 bg-neon-pink/10 backdrop-blur-sm text-center">
+                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-neon-pink animate-pulse" />
+                <div className="w-14 h-14 mx-auto rounded-full bg-neon-pink/30 flex items-center justify-center text-xl font-bold border-2 border-neon-pink/60 text-white mb-3 shadow-[0_0_20px_hsl(330_85%_60%/0.4)]">S</div>
+                <p className="text-white font-bold text-sm">Socio</p>
+                <p className="text-neon-pink font-bold text-lg">$17,500</p>
+                <p className="text-gray-400 text-xs">COP / ticket</p>
+              </motion.div>
+              {/* Sub Socio */}
+              <motion.div whileHover={{ scale: 1.05 }} className="relative p-5 rounded-2xl border border-neon-orange/40 bg-neon-orange/10 backdrop-blur-sm text-center">
+                <div className="w-14 h-14 mx-auto rounded-full bg-neon-orange/30 flex items-center justify-center text-xl font-bold border-2 border-neon-orange/60 text-white mb-3 shadow-[0_0_20px_hsl(25_95%_53%/0.4)]">SS</div>
+                <p className="text-white font-bold text-sm">Sub Socio</p>
+                <p className="text-neon-orange font-bold text-lg">$15,000</p>
+                <p className="text-gray-400 text-xs">COP / ticket</p>
+              </motion.div>
+              {/* Cabeza */}
+              <motion.div whileHover={{ scale: 1.05 }} className="relative p-5 rounded-2xl border border-neon-purple/40 bg-neon-purple/10 backdrop-blur-sm text-center">
+                <div className="w-14 h-14 mx-auto rounded-full bg-neon-purple/30 flex items-center justify-center text-xl font-bold border-2 border-neon-purple/60 text-white mb-3 shadow-[0_0_20px_hsl(270_91%_65%/0.4)]">C</div>
+                <p className="text-white font-bold text-sm">Cabeza</p>
+                <p className="text-neon-purple font-bold text-lg">$10,000</p>
+                <p className="text-gray-400 text-xs">COP / ticket</p>
+              </motion.div>
+              {/* Promotor */}
+              <motion.div whileHover={{ scale: 1.05 }} className="relative p-5 rounded-2xl border border-neon-blue/40 bg-neon-blue/10 backdrop-blur-sm text-center">
+                <div className="w-14 h-14 mx-auto rounded-full bg-neon-blue/30 flex items-center justify-center text-xl font-bold border-2 border-neon-blue/60 text-white mb-3 shadow-[0_0_20px_hsl(217_91%_60%/0.4)]">P</div>
+                <p className="text-white font-bold text-sm">Promotor</p>
+                <p className="text-neon-blue font-bold text-lg">$7,500</p>
+                <p className="text-gray-400 text-xs">COP / ticket</p>
+              </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -210,11 +212,11 @@ export default function Landing() {
             <Badge variant="secondary" className="mb-4 bg-neon-purple/20 text-neon-purple border-neon-purple/30">
               <Building2 className="w-3.5 h-3.5 mr-1" /> Para Promotoras
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold font-display mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold font-display mb-4 text-white">
               Deja de lidiar con vendedores informales{" "}
               <span className="text-gradient-party">y efectivo sin control</span>
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl">
+            <p className="text-lg text-gray-300 max-w-3xl">
               Con CREWS, cada vendedor firma digitalmente su acuerdo de comisiones antes de vender.
               Todo el dinero fluye de forma virtual. Tú solo pagas con comprobante.
             </p>
@@ -232,8 +234,8 @@ export default function Landing() {
                   <div className={`w-14 h-14 rounded-2xl ${item.bg} flex items-center justify-center mb-4`}>
                     <item.icon className={`w-7 h-7 ${item.color}`} />
                   </div>
-                  <h3 className="text-lg font-bold mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm">{item.desc}</p>
+                  <h3 className="text-lg font-bold mb-2 text-white">{item.title}</h3>
+                  <p className="text-gray-300 text-sm">{item.desc}</p>
                 </Card>
               </motion.div>
             ))}
@@ -255,11 +257,11 @@ export default function Landing() {
             <Badge variant="secondary" className="mb-4 bg-neon-pink/20 text-neon-pink border-neon-pink/30">
               <Ticket className="w-3.5 h-3.5 mr-1" /> Para Vendedores
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold font-display mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold font-display mb-4 text-white">
               Vende boletas, gana comisiones reales{" "}
               <span className="text-gradient-party">y crece en tu carrera</span>
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl">
+            <p className="text-lg text-gray-300 max-w-3xl">
               Únete a una red formal, recibe tus pagos de forma virtual y compite por los mejores rankings. Sin efectivo, sin incertidumbre.
             </p>
           </motion.div>
@@ -277,7 +279,7 @@ export default function Landing() {
                 viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
                 <Card variant="glass" className="p-5 h-full flex items-start gap-4 glass-dark hover:border-primary/30 transition-all">
                   <item.icon className={`w-6 h-6 ${item.color} shrink-0 mt-0.5`} />
-                  <p className="text-sm font-medium">{item.text}</p>
+                  <p className="text-sm font-medium text-gray-200">{item.text}</p>
                 </Card>
               </motion.div>
             ))}
@@ -298,7 +300,7 @@ export default function Landing() {
             <Badge variant="secondary" className="mb-4 bg-neon-blue/20 text-neon-blue border-neon-blue/30">
               🎯 Paso a paso
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold font-display">
+            <h2 className="text-4xl md:text-5xl font-bold font-display text-white">
               Así funciona <span className="text-gradient-party">CREWS</span>
             </h2>
           </motion.div>
@@ -306,7 +308,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Promotora steps */}
             <div>
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
                 <Building2 className="w-5 h-5 text-neon-purple" /> Para Promotoras
               </h3>
               <div className="space-y-4">
@@ -323,7 +325,7 @@ export default function Landing() {
                     <div className="w-8 h-8 rounded-full bg-gradient-crews flex items-center justify-center text-white font-bold text-sm shrink-0">
                       {i + 1}
                     </div>
-                    <p className="text-sm text-muted-foreground pt-1">{step}</p>
+                    <p className="text-sm text-gray-300 pt-1">{step}</p>
                   </motion.div>
                 ))}
               </div>
@@ -331,7 +333,7 @@ export default function Landing() {
 
             {/* Vendor steps */}
             <div>
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
                 <Ticket className="w-5 h-5 text-neon-pink" /> Para Vendedores
               </h3>
               <div className="space-y-4">
@@ -348,7 +350,7 @@ export default function Landing() {
                     <div className="w-8 h-8 rounded-full bg-gradient-party flex items-center justify-center text-white font-bold text-sm shrink-0">
                       {i + 1}
                     </div>
-                    <p className="text-sm text-muted-foreground pt-1">{step}</p>
+                    <p className="text-sm text-gray-300 pt-1">{step}</p>
                   </motion.div>
                 ))}
               </div>
@@ -361,7 +363,7 @@ export default function Landing() {
       <section className="py-24 px-4 relative">
         <div className="max-w-6xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold font-display mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold font-display mb-4 text-white">
               Números que <span className="text-gradient-party">hablan</span>
             </h2>
           </motion.div>
@@ -379,7 +381,7 @@ export default function Landing() {
                   <p className="text-3xl md:text-4xl font-bold font-display text-gradient-party">
                     <AnimatedCounter target={stat.value} suffix={stat.suffix} prefix={stat.prefix} />
                   </p>
-                  <p className="text-sm text-muted-foreground mt-2">{stat.label}</p>
+                  <p className="text-sm text-gray-300 mt-2">{stat.label}</p>
                 </Card>
               </motion.div>
             ))}
@@ -394,16 +396,16 @@ export default function Landing() {
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 rounded-full bg-gradient-party flex items-center justify-center text-2xl">{t.avatar}</div>
                     <div>
-                      <p className="font-bold text-sm">{t.name}</p>
+                      <p className="font-bold text-sm text-white">{t.name}</p>
                       <div className="flex items-center gap-2">
-                        <p className="text-xs text-muted-foreground">{t.role}</p>
+                        <p className="text-xs text-gray-400">{t.role}</p>
                         <Badge variant={t.type === "promotora" ? "default" : "neon"} className="text-[10px] px-1.5 py-0">
                           {t.type === "promotora" ? "Promotora" : "Vendedor"}
                         </Badge>
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground italic">"{t.quote}"</p>
+                  <p className="text-sm text-gray-300 italic">"{t.quote}"</p>
                 </Card>
               </motion.div>
             ))}
@@ -415,7 +417,7 @@ export default function Landing() {
       <section id="faq" className="py-24 px-4 relative bg-card/50">
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <h2 className="text-4xl font-bold font-display mb-4">Preguntas <span className="text-gradient-party">frecuentes</span></h2>
+            <h2 className="text-4xl font-bold font-display mb-4 text-white">Preguntas <span className="text-gradient-party">frecuentes</span></h2>
           </motion.div>
 
           {faqData.map((category) => (
@@ -424,8 +426,8 @@ export default function Landing() {
               <Accordion type="single" collapsible className="space-y-2">
                 {category.items.map((item, i) => (
                   <AccordionItem key={i} value={`${category.category}-${i}`} className="border border-border rounded-lg px-4 bg-card/50">
-                    <AccordionTrigger className="text-sm font-medium text-left">{item.q}</AccordionTrigger>
-                    <AccordionContent className="text-sm text-muted-foreground">{item.a}</AccordionContent>
+                    <AccordionTrigger className="text-sm font-medium text-left text-gray-200">{item.q}</AccordionTrigger>
+                    <AccordionContent className="text-sm text-gray-400">{item.a}</AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>
@@ -439,7 +441,7 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-cta opacity-10" />
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-4xl md:text-5xl font-bold font-display mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold font-display mb-6 text-white">
               ¿Listo para dejar{" "}
               <span className="text-gradient-party">el caos atrás?</span>
             </h2>
@@ -448,7 +450,7 @@ export default function Landing() {
                 <Building2 className="w-5 h-5" />
                 Registrar mi red de vendedores
               </Button>
-              <Button variant="outline" size="xl" onClick={() => navigate("/register?type=vendedor")} className="gap-2 text-lg border-primary/30 hover:bg-primary/10">
+              <Button variant="outline" size="xl" onClick={() => navigate("/register?type=vendedor")} className="gap-2 text-lg border-white/30 text-white hover:bg-white/10">
                 <Ticket className="w-5 h-5" />
                 Unirme como vendedor
               </Button>
@@ -467,12 +469,12 @@ export default function Landing() {
               </div>
               <span className="font-bold text-gradient-party">CREWS</span>
             </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">Términos y Condiciones</a>
-              <a href="#" className="hover:text-foreground transition-colors">Política de Privacidad</a>
-              <a href="#" className="hover:text-foreground transition-colors">Contacto</a>
+            <div className="flex items-center gap-6 text-sm text-gray-400">
+              <a href="#" className="hover:text-white transition-colors">Términos y Condiciones</a>
+              <a href="#" className="hover:text-white transition-colors">Política de Privacidad</a>
+              <a href="#" className="hover:text-white transition-colors">Contacto</a>
             </div>
-            <p className="text-xs text-muted-foreground">© 2026 CREWS. Todos los derechos reservados.</p>
+            <p className="text-xs text-gray-500">© 2026 CREWS. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
