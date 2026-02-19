@@ -170,32 +170,32 @@ export default function Landing() {
             className="mt-16 max-w-3xl mx-auto">
             <h3 className="text-lg font-semibold text-white mb-6 text-center">Estructura jerárquica con comisiones por nivel</h3>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              {/* Socio */}
+              {/* Nivel 4 */}
               <motion.div whileHover={{ scale: 1.05 }} className="relative p-5 rounded-2xl border border-neon-pink/40 bg-neon-pink/10 backdrop-blur-sm text-center">
                 <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-neon-pink animate-pulse" />
-                <div className="w-14 h-14 mx-auto rounded-full bg-neon-pink/30 flex items-center justify-center text-xl font-bold border-2 border-neon-pink/60 text-white mb-3 shadow-[0_0_20px_hsl(330_85%_60%/0.4)]">S</div>
-                <p className="text-white font-bold text-sm">Socio</p>
+                <div className="w-14 h-14 mx-auto rounded-full bg-neon-pink/30 flex items-center justify-center text-xl font-bold border-2 border-neon-pink/60 text-white mb-3 shadow-[0_0_20px_hsl(330_85%_60%/0.4)]">4</div>
+                <p className="text-white font-bold text-sm">Nivel 4</p>
                 <p className="text-neon-pink font-bold text-lg">$17,500</p>
                 <p className="text-gray-400 text-xs">COP / ticket</p>
               </motion.div>
-              {/* Sub Socio */}
+              {/* Nivel 3 */}
               <motion.div whileHover={{ scale: 1.05 }} className="relative p-5 rounded-2xl border border-neon-orange/40 bg-neon-orange/10 backdrop-blur-sm text-center">
-                <div className="w-14 h-14 mx-auto rounded-full bg-neon-orange/30 flex items-center justify-center text-xl font-bold border-2 border-neon-orange/60 text-white mb-3 shadow-[0_0_20px_hsl(25_95%_53%/0.4)]">SS</div>
-                <p className="text-white font-bold text-sm">Sub Socio</p>
+                <div className="w-14 h-14 mx-auto rounded-full bg-neon-orange/30 flex items-center justify-center text-xl font-bold border-2 border-neon-orange/60 text-white mb-3 shadow-[0_0_20px_hsl(25_95%_53%/0.4)]">3</div>
+                <p className="text-white font-bold text-sm">Nivel 3</p>
                 <p className="text-neon-orange font-bold text-lg">$15,000</p>
                 <p className="text-gray-400 text-xs">COP / ticket</p>
               </motion.div>
-              {/* Cabeza */}
+              {/* Nivel 2 */}
               <motion.div whileHover={{ scale: 1.05 }} className="relative p-5 rounded-2xl border border-neon-purple/40 bg-neon-purple/10 backdrop-blur-sm text-center">
-                <div className="w-14 h-14 mx-auto rounded-full bg-neon-purple/30 flex items-center justify-center text-xl font-bold border-2 border-neon-purple/60 text-white mb-3 shadow-[0_0_20px_hsl(270_91%_65%/0.4)]">C</div>
-                <p className="text-white font-bold text-sm">Cabeza</p>
+                <div className="w-14 h-14 mx-auto rounded-full bg-neon-purple/30 flex items-center justify-center text-xl font-bold border-2 border-neon-purple/60 text-white mb-3 shadow-[0_0_20px_hsl(270_91%_65%/0.4)]">2</div>
+                <p className="text-white font-bold text-sm">Nivel 2</p>
                 <p className="text-neon-purple font-bold text-lg">$10,000</p>
                 <p className="text-gray-400 text-xs">COP / ticket</p>
               </motion.div>
-              {/* Promotor */}
+              {/* Nivel 1 */}
               <motion.div whileHover={{ scale: 1.05 }} className="relative p-5 rounded-2xl border border-neon-blue/40 bg-neon-blue/10 backdrop-blur-sm text-center">
-                <div className="w-14 h-14 mx-auto rounded-full bg-neon-blue/30 flex items-center justify-center text-xl font-bold border-2 border-neon-blue/60 text-white mb-3 shadow-[0_0_20px_hsl(217_91%_60%/0.4)]">P</div>
-                <p className="text-white font-bold text-sm">Promotor</p>
+                <div className="w-14 h-14 mx-auto rounded-full bg-neon-blue/30 flex items-center justify-center text-xl font-bold border-2 border-neon-blue/60 text-white mb-3 shadow-[0_0_20px_hsl(217_91%_60%/0.4)]">1</div>
+                <p className="text-white font-bold text-sm">Nivel 1</p>
                 <p className="text-neon-blue font-bold text-lg">$7,500</p>
                 <p className="text-gray-400 text-xs">COP / ticket</p>
               </motion.div>
