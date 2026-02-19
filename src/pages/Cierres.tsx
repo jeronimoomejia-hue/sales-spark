@@ -4,279 +4,183 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ClosureDetailModal } from "@/components/modals/ClosureDetailModal";
-import { 
-  Wallet, 
-  Download, 
-  Calendar, 
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  FileText,
-  TrendingUp,
-  Eye
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Wallet, Calendar, Clock, CheckCircle2, AlertCircle, Eye, Ticket, FileImage, Download
 } from "lucide-react";
+import { mockVendorClosures } from "@/services/closureService";
+import { VendorClosure } from "@/types/crews";
+import { toast } from "sonner";
+import { notifyPaymentConfirmed } from "@/services/whatsappService";
 
-const currentPeriod = {
-  start: "1 Feb 2026",
-  end: "15 Feb 2026",
-  tickets: 127,
-  totalSales: 5080000,
-  commission: 952500,
-  daysLeft: 3,
-  status: "in_progress"
-};
-
-const closureHistory = [
-  {
-    id: "CL-001",
-    period: "16 Ene - 31 Ene 2026",
-    tickets: 98,
-    totalSales: 3920000,
-    commission: 735000,
-    status: "paid",
-    paidDate: "5 Feb 2026"
-  },
-  {
-    id: "CL-002",
-    period: "1 Ene - 15 Ene 2026",
-    tickets: 112,
-    totalSales: 4480000,
-    commission: 840000,
-    status: "paid",
-    paidDate: "20 Ene 2026"
-  },
-  {
-    id: "CL-003",
-    period: "16 Dic - 31 Dic 2025",
-    tickets: 156,
-    totalSales: 6240000,
-    commission: 1170000,
-    status: "paid",
-    paidDate: "5 Ene 2026"
-  },
-  {
-    id: "CL-004",
-    period: "1 Dic - 15 Dic 2025",
-    tickets: 89,
-    totalSales: 3560000,
-    commission: 667500,
-    status: "paid",
-    paidDate: "20 Dic 2025"
-  }
-];
-
-const getStatusBadge = (status: string) => {
+const getStatusConfig = (status: VendorClosure["status"]) => {
   switch (status) {
-    case "paid":
-      return <Badge variant="success" className="gap-1"><CheckCircle2 className="w-3 h-3" /> Pagado</Badge>;
-    case "approved":
-      return <Badge variant="default" className="gap-1"><CheckCircle2 className="w-3 h-3" /> Aprobado</Badge>;
     case "pending":
-      return <Badge variant="warning" className="gap-1"><Clock className="w-3 h-3" /> Pendiente</Badge>;
-    case "disputed":
-      return <Badge variant="destructive" className="gap-1"><AlertCircle className="w-3 h-3" /> Disputa</Badge>;
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
+      return { label: "Pendiente de pago", color: "bg-warning/20 text-warning border-warning/30", icon: Clock };
+    case "payment_declared":
+      return { label: "Pago declarado", color: "bg-neon-blue/20 text-neon-blue border-neon-blue/30", icon: FileImage };
+    case "confirmed":
+      return { label: "Pagado y confirmado", color: "bg-success/20 text-success border-success/30", icon: CheckCircle2 };
   }
 };
 
 export default function Cierres() {
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedClosure, setSelectedClosure] = useState<typeof closureHistory[0] | null>(null);
-  
-  // Get user level from sessionStorage
   const [userLevel, setUserLevel] = useState<number>(1);
-  
+  const [closures] = useState<VendorClosure[]>(mockVendorClosures);
+  const [selectedClosure, setSelectedClosure] = useState<VendorClosure | null>(null);
+  const [showProofModal, setShowProofModal] = useState(false);
+
   useEffect(() => {
     const storedLevel = sessionStorage.getItem("demoUserLevel");
-    if (storedLevel) {
-      setUserLevel(parseInt(storedLevel));
-    }
+    if (storedLevel) setUserLevel(parseInt(storedLevel));
   }, []);
 
-  const totalPaid = closureHistory.reduce((sum, c) => sum + c.commission, 0);
-
-  const handleViewClosure = (closure: typeof closureHistory[0]) => {
-    setSelectedClosure(closure);
-    setShowDetailModal(true);
+  const handleConfirmPayment = (closure: VendorClosure) => {
+    toast.success("¡Pago confirmado exitosamente!");
+    notifyPaymentConfirmed("+57 300 000 0000", closure.vendorName, closure.totalCommission.toLocaleString(), closure.eventName);
+    setShowProofModal(false);
   };
 
+  const totalEarned = closures
+    .filter(c => c.status === "confirmed")
+    .reduce((sum, c) => sum + c.totalCommission, 0);
+
+  const pendingAmount = closures
+    .filter(c => c.status !== "confirmed")
+    .reduce((sum, c) => sum + c.totalCommission, 0);
+
   return (
-    <DashboardLayout 
-      title="Cierres de Caja" 
-      subtitle="Gestión de comisiones y pagos"
-      userLevel={userLevel}
-    >
+    <DashboardLayout title="Mis Cierres" subtitle="Aquí puedes ver el resumen de los pagos de cada evento en el que participaste" userLevel={userLevel}>
       <div className="space-y-6">
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Summary KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card variant="glass" className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/20">
-                <Wallet className="w-5 h-5 text-primary" />
-              </div>
+              <div className="p-2 rounded-lg bg-success/20"><CheckCircle2 className="w-5 h-5 text-success" /></div>
               <div>
-                <p className="text-sm text-muted-foreground">Pendiente Actual</p>
-                <p className="text-2xl font-bold font-display">${(currentPeriod.commission / 1000).toFixed(0)}k</p>
+                <p className="text-sm text-muted-foreground">Total confirmado</p>
+                <p className="text-2xl font-bold font-display">${(totalEarned / 1000).toFixed(0)}K</p>
               </div>
             </div>
           </Card>
           <Card variant="glass" className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-success/20">
-                <TrendingUp className="w-5 h-5 text-success" />
-              </div>
+              <div className="p-2 rounded-lg bg-warning/20"><Clock className="w-5 h-5 text-warning" /></div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Pagado</p>
-                <p className="text-2xl font-bold font-display">${(totalPaid / 1000000).toFixed(1)}M</p>
+                <p className="text-sm text-muted-foreground">Pendiente</p>
+                <p className="text-2xl font-bold font-display">${(pendingAmount / 1000).toFixed(0)}K</p>
               </div>
             </div>
           </Card>
           <Card variant="glass" className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-warning/20">
-                <Calendar className="w-5 h-5 text-warning" />
-              </div>
+              <div className="p-2 rounded-lg bg-primary/20"><Ticket className="w-5 h-5 text-primary" /></div>
               <div>
-                <p className="text-sm text-muted-foreground">Próximo Cierre</p>
-                <p className="text-2xl font-bold font-display">{currentPeriod.daysLeft} días</p>
-              </div>
-            </div>
-          </Card>
-          <Card variant="glass" className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-accent/20">
-                <FileText className="w-5 h-5 text-accent" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Cierres Totales</p>
-                <p className="text-2xl font-bold font-display">{closureHistory.length + 1}</p>
+                <p className="text-sm text-muted-foreground">Eventos cerrados</p>
+                <p className="text-2xl font-bold font-display">{closures.length}</p>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Current Period */}
-        <Card variant="glass" className="p-6 border-primary/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-gradient-party">
-                <Wallet className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">Período Actual</h2>
-                <p className="text-muted-foreground">{currentPeriod.start} - {currentPeriod.end}</p>
-              </div>
-            </div>
-            <Badge variant="warning" className="gap-1 px-3 py-1">
-              <Clock className="w-4 h-4" />
-              Cierra en {currentPeriod.daysLeft} días
-            </Badge>
-          </div>
+        {/* Closure list */}
+        {closures.length === 0 ? (
+          <Card variant="glass" className="p-12 text-center">
+            <Wallet className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground">Aún no tienes cierres. Cuando termine un evento en el que hayas participado, verás aquí el resumen de tus comisiones.</p>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {closures.map((closure, index) => {
+              const config = getStatusConfig(closure.status);
+              const StatusIcon = config.icon;
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="text-center p-4 rounded-lg bg-card-elevated">
-              <p className="text-sm text-muted-foreground mb-1">Tickets Vendidos</p>
-              <p className="text-3xl font-bold font-display text-gradient-party">{currentPeriod.tickets}</p>
-            </div>
-            <div className="text-center p-4 rounded-lg bg-card-elevated">
-              <p className="text-sm text-muted-foreground mb-1">Total Ventas</p>
-              <p className="text-3xl font-bold font-display">${(currentPeriod.totalSales / 1000000).toFixed(2)}M</p>
-            </div>
-            <div className="text-center p-4 rounded-lg bg-card-elevated">
-              <p className="text-sm text-muted-foreground mb-1">Tu Comisión</p>
-              <p className="text-3xl font-bold font-display text-success">${(currentPeriod.commission / 1000).toFixed(0)}k</p>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-warning/10 border border-warning/20 mb-4">
-            <div className="flex items-center gap-2 text-warning">
-              <AlertCircle className="w-5 h-5" />
-              <p className="text-sm font-medium">
-                Recuerda enviar tu cierre antes del 15 de Febrero a las 23:59
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Button variant="party" className="gap-2" onClick={() => setShowDetailModal(true)}>
-              <Download className="w-4 h-4" />
-              Descargar Reporte PDF
-            </Button>
-            <Button variant="outline" className="gap-2" onClick={() => setShowDetailModal(true)}>
-              <Eye className="w-4 h-4" />
-              Ver Detalle
-            </Button>
-          </div>
-        </Card>
-
-        {/* Closure History */}
-        <div>
-          <h2 className="text-xl font-bold mb-4">Historial de Cierres</h2>
-          <div className="space-y-3">
-            {closureHistory.map((closure, index) => (
-              <motion.div
-                key={closure.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-              <Card 
-                variant="default" 
-                className="p-4 hover:border-primary/30 transition-all cursor-pointer"
-                onClick={() => handleViewClosure(closure)}
-              >
-                  <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 rounded-lg bg-success/20">
-                        <CheckCircle2 className="w-5 h-5 text-success" />
+              return (
+                <motion.div key={closure.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.08 }}>
+                  <Card variant="default" className="p-5 hover:border-primary/30 transition-all">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 rounded-xl bg-gradient-party shrink-0">
+                          <Ticket className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg">{closure.eventName}</h3>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                            <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {new Date(closure.eventDate).toLocaleDateString()}</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Cierre: {new Date(closure.closureExecutedAt).toLocaleString()}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold">{closure.period}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {closure.tickets} tickets • ${(closure.totalSales / 1000000).toFixed(2)}M en ventas
-                        </p>
+
+                      <div className="flex items-center gap-6 flex-wrap">
+                        <div className="text-center">
+                          <p className="text-xs text-muted-foreground">Tickets</p>
+                          <p className="font-bold text-lg">{closure.ticketsSold}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-muted-foreground">Comisión</p>
+                          <p className="font-bold text-lg text-success">${closure.totalCommission.toLocaleString()}</p>
+                        </div>
+                        <Badge variant="outline" className={`gap-1 ${config.color}`}>
+                          <StatusIcon className="w-3.5 h-3.5" />
+                          {config.label}
+                        </Badge>
+
+                        {closure.status === "payment_declared" && (
+                          <Button variant="party" size="sm" className="gap-1" onClick={() => { setSelectedClosure(closure); setShowProofModal(true); }}>
+                            <Eye className="w-4 h-4" />
+                            Ver comprobante y confirmar
+                          </Button>
+                        )}
+                        {closure.status === "confirmed" && closure.confirmedAt && (
+                          <span className="text-xs text-muted-foreground">Confirmado: {new Date(closure.confirmedAt).toLocaleDateString()}</span>
+                        )}
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">Comisión</p>
-                        <p className="font-bold text-success">${closure.commission.toLocaleString()}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">Pagado</p>
-                        <p className="text-sm">{closure.paidDate}</p>
-                      </div>
-                      {getStatusBadge(closure.status)}
-                      <Button variant="ghost" size="sm" className="gap-1" onClick={(e) => { e.stopPropagation(); handleViewClosure(closure); }}>
-                        <Eye className="w-4 h-4" />
-                        Ver más
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Closure Detail Modal */}
-      <ClosureDetailModal
-        open={showDetailModal}
-        onOpenChange={setShowDetailModal}
-        closure={selectedClosure ? {
-          id: selectedClosure.id,
-          period: selectedClosure.period,
-          tickets: selectedClosure.tickets,
-          totalSales: selectedClosure.totalSales,
-          commission: selectedClosure.commission,
-          status: selectedClosure.status as 'pending' | 'approved' | 'paid' | 'disputed',
-          paidDate: selectedClosure.paidDate
-        } : undefined}
-      />
+      {/* Payment Proof Modal */}
+      <Dialog open={showProofModal} onOpenChange={setShowProofModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><FileImage className="w-5 h-5 text-primary" /> Comprobante de Pago</DialogTitle>
+            <DialogDescription>{selectedClosure?.eventName}</DialogDescription>
+          </DialogHeader>
+          {selectedClosure && (
+            <div className="space-y-4 mt-4">
+              <div className="p-4 rounded-lg bg-card-elevated">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">Monto declarado</span>
+                  <span className="font-bold text-success">${selectedClosure.paymentDeclaredAmount?.toLocaleString()} COP</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Fecha de pago</span>
+                  <span>{selectedClosure.paymentDeclaredAt ? new Date(selectedClosure.paymentDeclaredAt).toLocaleString() : "-"}</span>
+                </div>
+              </div>
+
+              {/* Simulated proof preview */}
+              <div className="border border-border rounded-lg p-8 text-center bg-card-elevated">
+                <FileImage className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">Comprobante de transferencia</p>
+                <p className="text-xs text-muted-foreground mt-1">(Vista previa simulada)</p>
+              </div>
+
+              <Button variant="party" className="w-full gap-2" onClick={() => handleConfirmPayment(selectedClosure)}>
+                <CheckCircle2 className="w-4 h-4" />
+                Confirmar que recibí este pago
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
