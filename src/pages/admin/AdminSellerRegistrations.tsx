@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { pendingRegistrations, SellerRegistration, getRegistrationsByEvent, getGlobalRegistrations } from "@/data/eventTemplates";
 import { events } from "@/data/mockData";
 import { toast } from "sonner";
+import { notifySellerApproved, notifyNewRegistration } from "@/services/whatsappService";
 
 export default function AdminSellerRegistrations() {
   const [registrations, setRegistrations] = useState<SellerRegistration[]>(pendingRegistrations);
@@ -45,12 +46,16 @@ export default function AdminSellerRegistrations() {
   const rejectedCount = registrations.filter(r => r.status === 'rejected').length;
 
   const handleApprove = (registrationId: string) => {
+    const reg = registrations.find(r => r.id === registrationId);
     setRegistrations(registrations.map(r => 
       r.id === registrationId 
         ? { ...r, status: 'approved' as const, reviewedAt: new Date().toISOString() }
         : r
     ));
     toast.success("Vendedor aprobado exitosamente");
+    if (reg) {
+      notifySellerApproved(reg.sellerPhone);
+    }
     setShowDetailModal(false);
   };
 
@@ -172,6 +177,11 @@ export default function AdminSellerRegistrations() {
                             <h4 className="font-semibold">{registration.sellerName}</h4>
                             <Badge variant={registration.requestedLevel === 2 ? 'default' : 'secondary'}>
                               {registration.requestedLevel === 2 ? 'Cabeza' : 'Promotor'}
+                            </Badge>
+                            {/* T&C Column */}
+                            <Badge variant="outline" className="text-success border-success gap-1 text-[10px]">
+                              <Check className="w-3 h-3" />
+                              T&C {new Date(registration.requestedAt).toLocaleDateString()}
                             </Badge>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">

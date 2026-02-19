@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MensualistaLanding from "./pages/MensualistaLanding";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Ventas from "./pages/Ventas";
@@ -50,7 +51,7 @@ const App = () => (
           
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           
           {/* Seller Dashboard Routes */}
           <Route path="/dashboard" element={<Dashboard />} />
