@@ -2,167 +2,77 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Users, 
-  Ticket, 
-  TrendingUp, 
+import {
+  Ticket,
+  TrendingUp,
   Star,
   ChevronRight,
-  Sparkles,
   MapPin,
   Calendar,
   DollarSign,
-  Zap,
   Crown,
-  Gift,
-  Trophy,
   PartyPopper,
-  Music,
-  Mic2,
-  Heart,
   CheckCircle2,
-  Clock,
-  Target
+  TicketIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Promotora {
+// Promotoras donde el vendedor ya tiene relación activa (ya vendió o fue aprobado)
+interface ActivePromotora {
   id: string;
   name: string;
   logo: string;
   tagline: string;
-  activeEvents: number;
-  totalSellers: number;
-  totalSales: number;
-  trend: number;
-  commission: string;
-  avgTicketPrice: string;
-  location: string;
-  nextEvent: string;
-  rating: number;
-  isHot?: boolean;
-  isNew?: boolean;
-  isPremium?: boolean;
-  genre: string;
   color: string;
+  // Datos del vendedor en esta promotora
+  myLevel: string;
+  myCommission: string;
+  myTicketsSold: number;
+  myEarnings: string;
+  // Info del evento activo
+  activeEvents: ActiveEvent[];
 }
 
-const mockPromotoras: Promotora[] = [
+interface ActiveEvent {
+  id: string;
+  name: string;
+  date: string;
+  venue: string;
+  status: 'active' | 'upcoming';
+}
+
+// Solo las promotoras donde Carlos Ruiz (demo) tiene relación activa
+const myPromotoras: ActivePromotora[] = [
   {
-    id: "promo-1",
+    id: "promo-neon",
     name: "NeonEvents Productions",
     logo: "🎉",
     tagline: "Los mejores eventos electrónicos de Colombia",
-    activeEvents: 3,
-    totalSellers: 89,
-    totalSales: 4520,
-    trend: 15,
-    commission: "12%",
-    avgTicketPrice: "$85,000",
-    location: "Medellín, Bogotá",
-    nextEvent: "Neon Fest 2026 - 15 Feb",
-    rating: 4.9,
-    isHot: true,
-    isPremium: true,
-    genre: "Electrónica",
     color: "from-neon-purple to-neon-pink",
+    myLevel: "Nivel 1",
+    myCommission: "$7,500 / ticket",
+    myTicketsSold: 285,
+    myEarnings: "$2,137,500",
+    activeEvents: [
+      { id: "evt-1", name: "Neon Festival 2026", date: "15 Feb", venue: "Parque Simón Bolívar", status: "active" },
+      { id: "evt-2", name: "Rock Night", date: "28 Feb", venue: "Movistar Arena", status: "active" },
+      { id: "evt-3", name: "Electro Waves", date: "10 Mar", venue: "La 33", status: "upcoming" },
+    ],
   },
   {
-    id: "promo-2",
-    name: "Festival Colombia",
-    logo: "🎪",
-    tagline: "Cultura y música para todos",
-    activeEvents: 2,
-    totalSellers: 45,
-    totalSales: 2180,
-    trend: 8,
-    commission: "10%",
-    avgTicketPrice: "$120,000",
-    location: "Nacional",
-    nextEvent: "Carnaval Fest - 28 Feb",
-    rating: 4.7,
-    isNew: true,
-    genre: "Variado",
-    color: "from-neon-orange to-neon-yellow",
-  },
-  {
-    id: "promo-3",
-    name: "Rumba Nights",
-    logo: "🌙",
-    tagline: "Las noches más épicas de la ciudad",
-    activeEvents: 1,
-    totalSellers: 23,
-    totalSales: 890,
-    trend: 22,
-    commission: "15%",
-    avgTicketPrice: "$45,000",
-    location: "Cali",
-    nextEvent: "Noche Latina - 8 Feb",
-    rating: 4.5,
-    genre: "Latina",
-    color: "from-neon-blue to-neon-green",
-  },
-  {
-    id: "promo-4",
-    name: "Rock en Vivo",
-    logo: "🎸",
-    tagline: "El rock nunca muere",
-    activeEvents: 2,
-    totalSellers: 34,
-    totalSales: 1560,
-    trend: 5,
-    commission: "11%",
-    avgTicketPrice: "$95,000",
-    location: "Bogotá",
-    nextEvent: "Metal Fest - 22 Feb",
-    rating: 4.8,
-    isPremium: true,
-    genre: "Rock/Metal",
-    color: "from-red-500 to-orange-500",
-  },
-  {
-    id: "promo-5",
+    id: "promo-urban",
     name: "Urban Music Co",
     logo: "🎤",
     tagline: "Reggaeton, trap y más",
-    activeEvents: 4,
-    totalSellers: 156,
-    totalSales: 8920,
-    trend: 35,
-    commission: "14%",
-    avgTicketPrice: "$75,000",
-    location: "Nacional",
-    nextEvent: "Urban Kings - 5 Feb",
-    rating: 4.9,
-    isHot: true,
-    genre: "Urbano",
-    color: "from-neon-pink to-neon-purple",
+    color: "from-neon-pink to-neon-orange",
+    myLevel: "Nivel 1",
+    myCommission: "$8,500 / ticket",
+    myTicketsSold: 43,
+    myEarnings: "$365,500",
+    activeEvents: [
+      { id: "urban-evt-1", name: "Urban Kings Vol. 3", date: "5 Feb", venue: "Movistar Arena", status: "active" },
+    ],
   },
-  {
-    id: "promo-6",
-    name: "Techno Underground",
-    logo: "🔊",
-    tagline: "Para los verdaderos amantes del techno",
-    activeEvents: 1,
-    totalSellers: 18,
-    totalSales: 420,
-    trend: 12,
-    commission: "13%",
-    avgTicketPrice: "$65,000",
-    location: "Medellín",
-    nextEvent: "Dark Warehouse - 14 Feb",
-    rating: 4.6,
-    isNew: true,
-    genre: "Techno",
-    color: "from-gray-600 to-gray-800",
-  },
-];
-
-const highlights = [
-  { icon: DollarSign, text: "Comisiones del 10% al 15%", color: "text-neon-green" },
-  { icon: Zap, text: "Pagos semanales", color: "text-neon-yellow" },
-  { icon: Gift, text: "Bonos por metas", color: "text-neon-pink" },
-  { icon: Trophy, text: "Ranking de vendedores", color: "text-neon-purple" },
 ];
 
 interface PromotoraSelectorProps {
@@ -171,6 +81,9 @@ interface PromotoraSelectorProps {
 }
 
 export function PromotoraSelector({ onSelect, selectedId }: PromotoraSelectorProps) {
+  const totalTickets = myPromotoras.reduce((sum, p) => sum + p.myTicketsSold, 0);
+  const totalEvents = myPromotoras.reduce((sum, p) => sum + p.activeEvents.length, 0);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Animated Background */}
@@ -180,192 +93,160 @@ export function PromotoraSelector({ onSelect, selectedId }: PromotoraSelectorPro
         <div className="absolute top-1/2 left-10 w-64 h-64 bg-neon-blue/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
       </div>
 
-      <div className="relative z-10 px-4 md:px-8 py-8 max-w-7xl mx-auto">
-        {/* Header Section */}
+      <div className="relative z-10 px-4 md:px-8 py-8 max-w-5xl mx-auto">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="text-center mb-10"
         >
-          {/* Welcome Badge */}
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-party mb-6"
           >
             <PartyPopper className="w-5 h-5 text-white" />
-            <span className="text-white font-semibold">¡Bienvenido, Vendedor! 🎉</span>
+            <span className="text-white font-semibold">¡Bienvenido de vuelta! 🎉</span>
           </motion.div>
 
-          <h1 className="text-4xl md:text-6xl font-bold font-display mb-4">
-            Elige tu{" "}
-            <span className="text-gradient-party">Promotora</span>
+          <h1 className="text-4xl md:text-5xl font-bold font-display mb-3">
+            ¿Desde dónde{" "}
+            <span className="text-gradient-party">vas a vender?</span>
           </h1>
-          
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Selecciona para qué productora quieres vender boletas y comienza a generar ingresos 💰
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+            Selecciona la promotora para ver tu dashboard de ese equipo
           </p>
+        </motion.div>
 
-          {/* Highlights Bar */}
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            {highlights.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border"
-              >
-                <item.icon className={`w-4 h-4 ${item.color}`} />
-                <span className="text-sm font-medium">{item.text}</span>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Stats Summary */}
-          <Card variant="glass" className="inline-flex items-center gap-6 md:gap-10 px-6 py-4">
-            <div className="text-center">
-              <p className="text-2xl md:text-3xl font-bold text-gradient-party">6</p>
-              <p className="text-xs text-muted-foreground">Promotoras</p>
+        {/* Mi resumen global */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-8"
+        >
+          <Card variant="glass" className="p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-xl bg-gradient-party">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-bold">Tu resumen como vendedor</p>
+                <p className="text-sm text-muted-foreground">Acumulado en todas tus promotoras</p>
+              </div>
             </div>
-            <div className="w-px h-10 bg-border" />
-            <div className="text-center">
-              <p className="text-2xl md:text-3xl font-bold text-gradient-party">13</p>
-              <p className="text-xs text-muted-foreground">Eventos Activos</p>
-            </div>
-            <div className="w-px h-10 bg-border" />
-            <div className="text-center">
-              <p className="text-2xl md:text-3xl font-bold text-gradient-party">365+</p>
-              <p className="text-xs text-muted-foreground">Vendedores</p>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-3 rounded-xl bg-card-elevated border border-border">
+                <p className="text-2xl font-bold text-gradient-party">{myPromotoras.length}</p>
+                <p className="text-xs text-muted-foreground">Promotoras activas</p>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-card-elevated border border-border">
+                <p className="text-2xl font-bold text-gradient-party">{totalEvents}</p>
+                <p className="text-xs text-muted-foreground">Eventos en curso</p>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-card-elevated border border-border">
+                <p className="text-2xl font-bold text-gradient-party">{totalTickets}</p>
+                <p className="text-xs text-muted-foreground">Tickets vendidos (total)</p>
+              </div>
             </div>
           </Card>
         </motion.div>
 
-        {/* Featured Section Title */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3 mb-6"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-party flex items-center justify-center">
-            <Crown className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold font-display">Promotoras Disponibles</h2>
-            <p className="text-sm text-muted-foreground">Elige una o varias para comenzar</p>
-          </div>
-        </motion.div>
-
-        {/* Promotoras Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {mockPromotoras.map((promotora, index) => (
+        {/* Lista de promotoras activas */}
+        <div className="space-y-4">
+          {myPromotoras.map((promotora, index) => (
             <motion.div
               key={promotora.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
+              transition={{ duration: 0.35, delay: 0.2 + index * 0.1 }}
             >
               <Card
                 variant="neon"
                 className={cn(
                   "relative overflow-hidden cursor-pointer transition-all duration-300",
-                  "hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20",
+                  "hover:scale-[1.01] hover:shadow-2xl hover:shadow-primary/20",
                   selectedId === promotora.id && "ring-2 ring-primary shadow-lg shadow-primary/30"
                 )}
                 onClick={() => onSelect(promotora.id)}
               >
-                {/* Top Gradient Bar */}
-                <div className={`h-2 bg-gradient-to-r ${promotora.color}`} />
-                
-                {/* Badges */}
-                <div className="absolute top-4 right-4 flex flex-col gap-2">
-                  {promotora.isHot && (
-                    <Badge className="bg-neon-orange/20 text-neon-orange border-neon-orange/30">
-                      🔥 Hot
-                    </Badge>
-                  )}
-                  {promotora.isNew && (
-                    <Badge className="bg-neon-green/20 text-neon-green border-neon-green/30">
-                      ✨ Nueva
-                    </Badge>
-                  )}
-                  {promotora.isPremium && (
-                    <Badge className="bg-neon-yellow/20 text-neon-yellow border-neon-yellow/30">
-                      <Crown className="w-3 h-3 mr-1" /> Premium
-                    </Badge>
-                  )}
-                </div>
+                {/* Top color bar */}
+                <div className={`h-1.5 bg-gradient-to-r ${promotora.color}`} />
 
-                <div className="p-6">
-                  {/* Logo & Info */}
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${promotora.color} flex items-center justify-center text-4xl shadow-lg`}>
+                <div className="p-5">
+                  <div className="flex items-start gap-4">
+                    {/* Logo */}
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${promotora.color} flex items-center justify-center text-3xl shadow-lg shrink-0`}>
                       {promotora.logo}
                     </div>
+
+                    {/* Info principal */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-lg font-display truncate">{promotora.name}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{promotora.tagline}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="w-4 h-4 text-neon-yellow fill-neon-yellow" />
-                        <span className="text-sm font-medium">{promotora.rating}</span>
-                        <span className="text-xs text-muted-foreground">• {promotora.genre}</span>
+                      <div className="flex items-center gap-3 mb-1">
+                        <h3 className="font-bold text-lg font-display">{promotora.name}</h3>
+                        <Badge className="bg-success/20 text-success border-success/40 text-xs gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Activo
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">{promotora.tagline}</p>
+
+                      {/* Mis datos en esta promotora */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card-elevated border border-border text-xs">
+                          <Crown className="w-3 h-3 text-warning shrink-0" />
+                          <span className="font-medium">{promotora.myLevel}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card-elevated border border-border text-xs">
+                          <DollarSign className="w-3 h-3 text-success shrink-0" />
+                          <span className="font-medium">{promotora.myCommission}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card-elevated border border-border text-xs">
+                          <TicketIcon className="w-3 h-3 text-primary shrink-0" />
+                          <span className="font-medium">{promotora.myTicketsSold} tickets</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card-elevated border border-border text-xs">
+                          <TrendingUp className="w-3 h-3 text-neon-pink shrink-0" />
+                          <span className="font-medium">{promotora.myEarnings}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    <div className="p-3 rounded-xl bg-card-elevated text-center">
-                      <Ticket className="w-4 h-4 mx-auto mb-1 text-neon-pink" />
-                      <p className="text-lg font-bold">{promotora.activeEvents}</p>
-                      <p className="text-[10px] text-muted-foreground">Eventos</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-card-elevated text-center">
-                      <Users className="w-4 h-4 mx-auto mb-1 text-neon-blue" />
-                      <p className="text-lg font-bold">{promotora.totalSellers}</p>
-                      <p className="text-[10px] text-muted-foreground">Vendedores</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-card-elevated text-center">
-                      <DollarSign className="w-4 h-4 mx-auto mb-1 text-neon-green" />
-                      <p className="text-lg font-bold">{promotora.commission}</p>
-                      <p className="text-[10px] text-muted-foreground">Comisión</p>
-                    </div>
-                  </div>
-
-                  {/* Info Pills */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-card-elevated text-xs">
-                      <MapPin className="w-3 h-3 text-muted-foreground" />
-                      <span>{promotora.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-card-elevated text-xs">
-                      <Ticket className="w-3 h-3 text-muted-foreground" />
-                      <span>{promotora.avgTicketPrice}</span>
-                    </div>
-                  </div>
-
-                  {/* Next Event */}
-                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-primary" />
-                      <span className="text-xs text-muted-foreground">Próximo evento:</span>
-                    </div>
-                    <p className="text-sm font-semibold mt-1">{promotora.nextEvent}</p>
-                  </div>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between">
-                    <div className={cn(
-                      "flex items-center gap-1 text-sm font-semibold",
-                      promotora.trend >= 0 ? "text-success" : "text-destructive"
-                    )}>
-                      <TrendingUp className={cn("w-4 h-4", promotora.trend < 0 && "rotate-180")} />
-                      {promotora.trend >= 0 ? "+" : ""}{promotora.trend}% ventas
-                    </div>
-                    <Button variant="party" size="sm" className="gap-1">
-                      Vender Aquí
+                    {/* CTA */}
+                    <Button variant="party" className="gap-2 shrink-0 self-center">
+                      Ir al dashboard
                       <ChevronRight className="w-4 h-4" />
                     </Button>
+                  </div>
+
+                  {/* Eventos activos */}
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      Eventos en los que estás
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {promotora.activeEvents.map(evt => (
+                        <div
+                          key={evt.id}
+                          className={cn(
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium",
+                            evt.status === 'active'
+                              ? "bg-primary/10 border-primary/30 text-primary"
+                              : "bg-muted border-border text-muted-foreground"
+                          )}
+                        >
+                          <Ticket className="w-3 h-3 shrink-0" />
+                          {evt.name}
+                          <span className="text-[10px] opacity-70">• {evt.date}</span>
+                          {evt.status === 'upcoming' && (
+                            <Badge className="text-[9px] h-3.5 px-1 bg-muted-foreground/20 text-muted-foreground border-0">
+                              Próximo
+                            </Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -373,44 +254,16 @@ export function PromotoraSelector({ onSelect, selectedId }: PromotoraSelectorPro
           ))}
         </div>
 
-        {/* Bottom CTA Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-        >
-          <Card variant="glass" className="p-6 md:p-8 text-center">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="text-4xl">🤔</div>
-              <h3 className="text-xl font-bold font-display">¿No encuentras tu promotora?</h3>
-            </div>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Si la productora con la que quieres trabajar no está en la lista, 
-              podemos ayudarte a conectarla o invitarla a CREWS
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button variant="outline" className="gap-2">
-                <Target className="w-4 h-4" />
-                Solicitar Promotora
-              </Button>
-              <Button variant="ghost" className="gap-2">
-                <Heart className="w-4 h-4" />
-                Contactar Soporte
-              </Button>
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* Tips Section */}
+        {/* Nota informativa */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
+          transition={{ delay: 0.6 }}
           className="mt-8 text-center"
         >
           <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-success" />
-            Puedes vender para múltiples promotoras simultáneamente
+            Solo ves las promotoras donde ya fuiste aprobado como vendedor
           </p>
         </motion.div>
       </div>
