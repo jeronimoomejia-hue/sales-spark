@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { RosterInvitationModal } from "@/components/admin/RosterInvitationModal";
-import { HierarchicalRosterView } from "@/components/admin/HierarchicalRosterView";
-import { SellerPublicProfile } from "@/components/seller/SellerPublicProfile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
   Users,
@@ -26,8 +24,6 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  Globe,
-  Zap,
 } from "lucide-react";
 import { events } from "@/data/mockData";
 import {
@@ -37,22 +33,18 @@ import {
   SellerRoster,
   EventTemplate,
 } from "@/data/eventTemplates";
-import { globalSellerPool, getGlobalPoolForAdmin } from "@/data/globalSellerPool";
-import { SellerRosterExtended, GlobalSellerEntry } from "@/types/seller";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-// Invitation states for sellers in this event's roster
 type InvitationState = 'invited' | 'confirmed' | 'declined' | 'active';
 
 interface RosterMemberState {
   seller: SellerRoster;
   invitationState: InvitationState;
-  isFreelance?: boolean;
 }
 
 const invitationBadge: Record<InvitationState, { label: string; className: string }> = {
-  invited: { label: "Invitación Enviada", className: "bg-yellow-400/20 text-yellow-300 border-yellow-400/40" },
+  invited: { label: "Invitación Enviada", className: "bg-warning/20 text-warning border-warning/40" },
   confirmed: { label: "Confirmado", className: "bg-success/20 text-success border-success/40" },
   declined: { label: "Declinó", className: "bg-destructive/20 text-destructive border-destructive/40" },
   active: { label: "Activo", className: "bg-primary/20 text-primary border-primary/40" },
@@ -63,41 +55,27 @@ export default function AdminEventRoster() {
   const event = events.find(e => e.id === eventId) || events[0];
   const assignment = getEventAssignment(event.id);
 
-  // Roster with invitation states
   const [rosterMembers, setRosterMembers] = useState<RosterMemberState[]>(
     (assignment?.roster || []).map(s => ({ seller: s, invitationState: 'active' as InvitationState }))
   );
-  const [searchTerm, setSearchTerm] = useState("");
   const [poolSearch, setPoolSearch] = useState("");
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showInvitationModal, setShowInvitationModal] = useState(false);
-  const [showSellerProfile, setShowSellerProfile] = useState<string | null>(null);
   const [templateName, setTemplateName] = useState("");
   const [rosterActivated, setRosterActivated] = useState(assignment?.status === 'active');
   const [viewMode, setViewMode] = useState<'hierarchy' | 'grid'>('hierarchy');
-  const [poolTab, setPoolTab] = useState<'own' | 'global'>('own');
-  const [invitedExternals, setInvitedExternals] = useState<Set<string>>(new Set());
 
   const rosterSellerIds = new Set(rosterMembers.map(m => m.seller.sellerId));
 
-  // Own sellers (have a relationship with this promotora)
-  const ownSellersPool = registeredSellers.filter(
+  // Solo vendedores propios de esta promotora
+  const availableSellers = registeredSellers.filter(
     s => s.status === 'active' && !rosterSellerIds.has(s.sellerId)
   );
 
-  // Global seller pool (all CREWS sellers, showing anonymous global stats)
-  const globalPool = getGlobalPoolForAdmin();
-  const externalPool = globalPool.filter(
-    g => g.isFreelance && !rosterSellerIds.has(g.id) && !invitedExternals.has(g.id)
-  );
-
-  const filteredOwn = ownSellersPool.filter(s =>
+  const filteredAvailable = availableSellers.filter(s =>
     s.name.toLowerCase().includes(poolSearch.toLowerCase())
-  );
-  const filteredExternal = externalPool.filter(g =>
-    g.name.toLowerCase().includes(poolSearch.toLowerCase())
   );
 
   const roster = rosterMembers.map(m => m.seller);
@@ -108,37 +86,6 @@ export default function AdminEventRoster() {
   const handleAddToRoster = (seller: SellerRoster) => {
     setRosterMembers(prev => [...prev, { seller, invitationState: 'active' }]);
     toast.success(`${seller.name} añadido a la alineación`);
-  };
-
-  const handleInviteExternal = (globalEntry: GlobalSellerEntry) => {
-    // Create a synthetic roster entry for the external seller
-    const globalData = globalSellerPool.find(s => s.id === globalEntry.id);
-    if (!globalData) return;
-
-    const syntheticSeller: SellerRoster = {
-      id: `ext-${globalEntry.id}`,
-      sellerId: globalEntry.id,
-      name: globalData.name,
-      avatar: globalData.avatar,
-      level: 1,
-      levelName: "Nivel 1",
-      position: 'promotor',
-      commissionRate: 8000,
-      status: 'pending',
-      invitationStatus: 'pending',
-      stats: {
-        totalSales: globalEntry.globalStats.totalTicketsSold,
-        avgPerEvent: globalEntry.globalStats.avgTicketsPerEvent,
-        eventsParticipated: globalEntry.globalStats.eventsParticipated,
-        successRate: globalEntry.globalStats.successRate,
-      },
-    };
-
-    setRosterMembers(prev => [...prev, { seller: syntheticSeller, invitationState: 'invited', isFreelance: true }]);
-    setInvitedExternals(prev => new Set([...prev, globalEntry.id]));
-    toast.success(`Invitación enviada a ${globalData.name}`, {
-      description: "Recibirá una notificación para aceptar o rechazar",
-    });
   };
 
   const handleRemoveFromRoster = (sellerId: string) => {
@@ -158,7 +105,6 @@ export default function AdminEventRoster() {
     );
   };
 
-  // Simulate invitation state change
   const handleSimulateResponse = (sellerId: string, response: 'confirmed' | 'declined') => {
     setRosterMembers(prev =>
       prev.map(m =>
@@ -201,19 +147,10 @@ export default function AdminEventRoster() {
 
   const handleConfirmActivation = () => {
     setRosterActivated(true);
-    // Set all 'active' members, invited ones stay as 'invited'
-    setRosterMembers(prev =>
-      prev.map(m => m.invitationState === 'active' ? { ...m, invitationState: 'active' } : m)
-    );
     toast.success("Alineación activada — Vendedores notificados");
   };
 
   const inviteLink = `https://crews.app/join/${event.id}`;
-
-  const profileSeller = showSellerProfile
-    ? globalSellerPool.find(s => s.id === showSellerProfile)
-    : null;
-
   const invitedCount = rosterMembers.filter(m => m.invitationState === 'invited').length;
   const confirmedCount = rosterMembers.filter(m => m.invitationState === 'confirmed').length;
 
@@ -232,7 +169,7 @@ export default function AdminEventRoster() {
             </Badge>
             <span className="text-sm text-muted-foreground">
               {rosterMembers.length} vendedores
-              {invitedCount > 0 && <span className="ml-2 text-yellow-400">• {invitedCount} pendientes</span>}
+              {invitedCount > 0 && <span className="ml-2 text-warning">• {invitedCount} pendientes</span>}
               {confirmedCount > 0 && <span className="ml-2 text-success">• {confirmedCount} confirmados</span>}
             </span>
           </div>
@@ -247,57 +184,46 @@ export default function AdminEventRoster() {
               </Button>
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowShareModal(true)}>
-              <Share2 className="w-4 h-4 mr-2" /> Invitar Link
+              <Share2 className="w-4 h-4 mr-2" /> Enlace de Invitación
             </Button>
             <Button variant="outline" size="sm" onClick={() => setShowTemplateModal(true)}>
-              <Copy className="w-4 h-4 mr-2" /> Plantilla
+              <Copy className="w-4 h-4 mr-2" /> Cargar Plantilla
             </Button>
             <Button variant="outline" size="sm" onClick={() => setShowSaveTemplateModal(true)}>
-              <Save className="w-4 h-4 mr-2" /> Guardar
+              <Save className="w-4 h-4 mr-2" /> Guardar Plantilla
             </Button>
             <Button variant="party" size="sm" onClick={handleActivateRoster} disabled={rosterActivated}>
-              {rosterActivated ? (
-                <><Check className="w-4 h-4 mr-2" /> Activa</>
-              ) : (
-                <><Bell className="w-4 h-4 mr-2" /> Activar y Notificar</>
-              )}
+              {rosterActivated
+                ? <><Check className="w-4 h-4 mr-2" /> Alineación Activa</>
+                : <><Bell className="w-4 h-4 mr-2" /> Activar y Notificar</>
+              }
             </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Pool Panel */}
+          {/* Pool de vendedores de la promotora */}
           <Card variant="glass" className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />
-                Pool de Vendedores
+                Mis Vendedores
               </h3>
+              <Badge variant="secondary">{availableSellers.length}</Badge>
             </div>
 
-            {/* Pool Tabs */}
-            <div className="flex gap-1 p-1 rounded-lg bg-card-elevated mb-4">
-              <button
-                onClick={() => setPoolTab('own')}
-                className={cn(
-                  "flex-1 text-xs font-medium py-1.5 rounded-md transition-all",
-                  poolTab === 'own' ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
+            {/* Enlace de invitación highlight */}
+            <div className="mb-4 p-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
+              <p className="text-xs text-muted-foreground mb-2">¿Quieres añadir vendedores nuevos?</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 w-full border-primary/30 text-primary hover:bg-primary/10"
+                onClick={() => setShowShareModal(true)}
               >
-                Mis Vendedores
-                <span className="ml-1 opacity-60">({ownSellersPool.length})</span>
-              </button>
-              <button
-                onClick={() => setPoolTab('global')}
-                className={cn(
-                  "flex-1 text-xs font-medium py-1.5 rounded-md transition-all flex items-center justify-center gap-1",
-                  poolTab === 'global' ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Globe className="w-3 h-3" />
-                CREWS Global
-                <span className="ml-0.5 opacity-60">({externalPool.length})</span>
-              </button>
+                <Link2 className="w-3.5 h-3.5" />
+                Copiar enlace de invitación
+              </Button>
             </div>
 
             <div className="relative mb-4">
@@ -310,125 +236,47 @@ export default function AdminEventRoster() {
               />
             </div>
 
-            <div className="space-y-2 max-h-[500px] overflow-y-auto">
-              {poolTab === 'own' ? (
-                <>
-                  {filteredOwn.map((seller) => (
-                    <motion.div
-                      key={seller.id}
-                      layout
-                      className="p-3 rounded-lg bg-card-elevated border border-border hover:border-primary/30 transition-all cursor-pointer group"
-                      onClick={() => handleAddToRoster(seller)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-party flex items-center justify-center text-white font-bold text-sm">
-                          {seller.avatar}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-sm">{seller.name}</p>
-                            {seller.stats.successRate >= 90 && (
-                              <Star className="w-3 h-3 text-warning fill-warning" />
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground">{seller.levelName}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Prom.</p>
-                          <p className="text-sm font-semibold text-success">{seller.stats.avgPerEvent}/evento</p>
-                        </div>
-                        <UserPlus className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="space-y-2 max-h-[460px] overflow-y-auto">
+              {filteredAvailable.map((seller) => (
+                <motion.div
+                  key={seller.id}
+                  layout
+                  className="p-3 rounded-lg bg-card-elevated border border-border hover:border-primary/30 transition-all cursor-pointer group"
+                  onClick={() => handleAddToRoster(seller)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-party flex items-center justify-center text-white font-bold text-sm">
+                      {seller.avatar}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm">{seller.name}</p>
+                        {seller.stats.successRate >= 90 && (
+                          <Star className="w-3 h-3 text-warning fill-warning" />
+                        )}
                       </div>
-                    </motion.div>
-                  ))}
-                  {filteredOwn.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8 text-sm">
-                      No hay más vendedores propios disponibles
-                    </p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="p-2 rounded-lg bg-neon-blue/10 border border-neon-blue/20 mb-2">
-                    <p className="text-xs text-neon-blue flex items-center gap-1">
-                      <Globe className="w-3 h-3" />
-                      Pool global de CREWS — solo métricas anónimas
-                    </p>
+                      <p className="text-xs text-muted-foreground">{seller.levelName}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">Prom.</p>
+                      <p className="text-sm font-semibold text-success">{seller.stats.avgPerEvent}/evento</p>
+                    </div>
+                    <UserPlus className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </div>
-                  {filteredExternal.map((entry) => {
-                    const globalData = globalSellerPool.find(s => s.id === entry.id);
-                    if (!globalData) return null;
-                    return (
-                      <motion.div
-                        key={entry.id}
-                        layout
-                        className="p-3 rounded-lg bg-card-elevated border border-border hover:border-neon-blue/30 transition-all group"
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="relative">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neon-blue/30 to-neon-purple/30 border border-neon-blue/40 flex items-center justify-center text-white font-bold text-sm">
-                              {entry.avatar}
-                            </div>
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-neon-blue/20 border border-neon-blue/60 flex items-center justify-center">
-                              <Zap className="w-2.5 h-2.5 text-neon-blue" />
-                            </div>
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-sm">{entry.name}</p>
-                              <Badge className="bg-neon-blue/10 text-neon-blue border-neon-blue/30 text-[10px] h-4">
-                                Freelance
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span>⭐ {entry.globalStats.successRate}%</span>
-                              <span>• {entry.globalStats.eventsParticipated} eventos</span>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => setShowSellerProfile(entry.id)}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded border border-border hover:border-primary/30"
-                          >
-                            Ver perfil
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-3 gap-1.5 text-center mb-2">
-                          <div className="p-1.5 rounded bg-card border border-border text-xs">
-                            <p className="font-bold">{entry.globalStats.totalTicketsSold}</p>
-                            <p className="text-[10px] text-muted-foreground">Tickets</p>
-                          </div>
-                          <div className="p-1.5 rounded bg-card border border-border text-xs">
-                            <p className="font-bold text-success">{entry.globalStats.successRate}%</p>
-                            <p className="text-[10px] text-muted-foreground">Éxito</p>
-                          </div>
-                          <div className="p-1.5 rounded bg-card border border-border text-xs">
-                            <p className="font-bold">{entry.globalStats.avgTicketsPerEvent}</p>
-                            <p className="text-[10px] text-muted-foreground">Prom/evt</p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full border-neon-blue/30 text-neon-blue hover:bg-neon-blue/10 gap-2"
-                          onClick={() => handleInviteExternal(entry)}
-                        >
-                          <Bell className="w-3 h-3" />
-                          Enviar Invitación
-                        </Button>
-                      </motion.div>
-                    );
-                  })}
-                  {filteredExternal.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8 text-sm">
-                      No hay más vendedores externos disponibles
-                    </p>
-                  )}
-                </>
+                </motion.div>
+              ))}
+
+              {filteredAvailable.length === 0 && (
+                <div className="text-center py-10">
+                  <Users className="w-10 h-10 mx-auto mb-2 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">No hay vendedores disponibles</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Comparte el enlace para añadir más</p>
+                </div>
               )}
             </div>
           </Card>
 
-          {/* Roster Panel */}
+          {/* Alineación actual */}
           <div className="lg:col-span-2">
             <Card variant="neon" className="p-6 min-h-[600px] relative overflow-hidden">
               <div className="absolute inset-0 opacity-5">
@@ -438,19 +286,17 @@ export default function AdminEventRoster() {
 
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-xl flex items-center gap-2">
-                    🏟️ Alineación Actual
-                  </h3>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>Formación: {subsocios.length}-{cabezas.length}-{promotores.length}</span>
-                  </div>
+                  <h3 className="font-bold text-xl">🏟️ Alineación Actual</h3>
+                  <span className="text-sm text-muted-foreground">
+                    Formación: {subsocios.length}-{cabezas.length}-{promotores.length}
+                  </span>
                 </div>
 
                 {rosterMembers.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                     <Users className="w-16 h-16 mb-4 opacity-30" />
                     <p className="text-lg font-medium">No hay vendedores en la alineación</p>
-                    <p className="text-sm mt-1">Añade vendedores desde el panel izquierdo o carga una plantilla</p>
+                    <p className="text-sm mt-1">Añade desde el panel izquierdo o carga una plantilla</p>
                   </div>
                 ) : (
                   <div className="max-h-[440px] overflow-y-auto pr-2 space-y-2">
@@ -461,33 +307,18 @@ export default function AdminEventRoster() {
                           key={member.seller.sellerId}
                           className={cn(
                             "flex items-center gap-3 p-3 rounded-lg border transition-all",
-                            member.invitationState === 'invited' && "border-yellow-400/30 bg-yellow-400/5",
+                            member.invitationState === 'invited' && "border-warning/30 bg-warning/5",
                             member.invitationState === 'confirmed' && "border-success/30 bg-success/5",
                             member.invitationState === 'declined' && "border-destructive/30 bg-destructive/5",
                             member.invitationState === 'active' && "border-border bg-card-elevated",
                           )}
                         >
-                          <div className="relative">
-                            <div className={cn(
-                              "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm",
-                              member.isFreelance
-                                ? "bg-gradient-to-br from-neon-blue/40 to-neon-purple/40 border border-neon-blue/40"
-                                : "bg-gradient-party"
-                            )}>
-                              {member.seller.avatar}
-                            </div>
-                            {member.isFreelance && (
-                              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-neon-blue/20 border border-neon-blue/60 flex items-center justify-center">
-                                <Zap className="w-2.5 h-2.5 text-neon-blue" />
-                              </div>
-                            )}
+                          <div className="w-10 h-10 rounded-full bg-gradient-party flex items-center justify-center text-white font-bold text-sm shrink-0">
+                            {member.seller.avatar}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <p className="font-medium text-sm">{member.seller.name}</p>
-                              {member.isFreelance && (
-                                <Badge className="bg-neon-blue/10 text-neon-blue border-neon-blue/30 text-[10px] h-4">Freelance</Badge>
-                              )}
                               <Badge variant="outline" className={cn("text-[10px] h-4 border", badgeInfo.className)}>
                                 {member.invitationState === 'invited' && <Clock className="w-2.5 h-2.5 mr-1" />}
                                 {member.invitationState === 'confirmed' && <CheckCircle2 className="w-2.5 h-2.5 mr-1" />}
@@ -497,10 +328,9 @@ export default function AdminEventRoster() {
                             </div>
                             <p className="text-xs text-muted-foreground">{member.seller.levelName}</p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {/* Simulate responses for demo */}
+                          <div className="flex items-center gap-1">
                             {member.invitationState === 'invited' && (
-                              <div className="flex gap-1">
+                              <>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -519,7 +349,7 @@ export default function AdminEventRoster() {
                                 >
                                   <XCircle className="w-4 h-4" />
                                 </Button>
-                              </div>
+                              </>
                             )}
                             {member.invitationState === 'declined' && (
                               <Button
@@ -528,7 +358,10 @@ export default function AdminEventRoster() {
                                 className="h-7 text-xs text-primary"
                                 onClick={() => {
                                   setRosterMembers(prev =>
-                                    prev.map(m => m.seller.sellerId === member.seller.sellerId ? { ...m, invitationState: 'invited' } : m)
+                                    prev.map(m => m.seller.sellerId === member.seller.sellerId
+                                      ? { ...m, invitationState: 'invited' }
+                                      : m
+                                    )
                                   );
                                   toast.info(`Re-invitación enviada a ${member.seller.name}`);
                                 }}
@@ -551,7 +384,6 @@ export default function AdminEventRoster() {
                   </div>
                 )}
 
-                {/* Stats Summary */}
                 {rosterMembers.length > 0 && (
                   <div className="mt-8 pt-6 border-t border-border grid grid-cols-4 gap-4">
                     <div className="text-center">
@@ -559,7 +391,7 @@ export default function AdminEventRoster() {
                       <p className="text-xs text-muted-foreground">Total</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-yellow-400">{invitedCount}</p>
+                      <p className="text-2xl font-bold text-warning">{invitedCount}</p>
                       <p className="text-xs text-muted-foreground">Pendientes</p>
                     </div>
                     <div className="text-center">
@@ -579,36 +411,6 @@ export default function AdminEventRoster() {
           </div>
         </div>
       </div>
-
-      {/* Seller Profile Modal */}
-      <Dialog open={!!showSellerProfile} onOpenChange={() => setShowSellerProfile(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-neon-blue" />
-              Perfil de Vendedor
-            </DialogTitle>
-            <DialogDescription>Información pública de CREWS — historial de promotoras privado</DialogDescription>
-          </DialogHeader>
-          {profileSeller && (
-            <div className="mt-2">
-              <SellerPublicProfile
-                seller={profileSeller}
-                isFreelance={true}
-                onInvite={(id) => {
-                  const entry = getGlobalPoolForAdmin().find(e => e.id === id);
-                  if (entry) {
-                    handleInviteExternal(entry);
-                    setShowSellerProfile(null);
-                  }
-                }}
-                alreadyInvited={invitedExternals.has(profileSeller.id)}
-                alreadyInRoster={rosterSellerIds.has(profileSeller.id)}
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Load Template Modal */}
       <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
@@ -679,19 +481,34 @@ export default function AdminEventRoster() {
         </DialogContent>
       </Dialog>
 
-      {/* Share Modal */}
+      {/* Share/Invite Modal */}
       <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Enlace de Invitación</DialogTitle>
-            <DialogDescription>Comparte este enlace para que nuevos vendedores se inscriban al evento</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="w-5 h-5 text-primary" />
+              Enlace de Invitación
+            </DialogTitle>
+            <DialogDescription>
+              Comparte este enlace. Quien lo abra podrá registrarse como vendedor de este evento.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <div className="p-4 rounded-lg bg-card-elevated border border-border">
-              <p className="text-sm font-mono break-all">{inviteLink}</p>
+              <p className="text-sm font-mono break-all text-primary">{inviteLink}</p>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Al acceder al enlace, el vendedor se registra y queda pendiente de aprobación. Una vez aprobado, aparece en tu lista de vendedores.
+            </p>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => { navigator.clipboard.writeText(inviteLink); toast.success("Enlace copiado"); }}>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  navigator.clipboard.writeText(inviteLink);
+                  toast.success("Enlace copiado al portapapeles");
+                }}
+              >
                 <Link2 className="w-4 h-4 mr-2" /> Copiar Enlace
               </Button>
               <Button variant="party" className="flex-1">
