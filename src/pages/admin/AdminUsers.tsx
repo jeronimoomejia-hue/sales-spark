@@ -35,12 +35,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { organizationData, TeamMember, getTotalSales, events, salesData } from "@/data/mockData";
+import { globalSellerPool, neonEventsSellerIds } from "@/data/globalSellerPool";
 import { SalesPerformanceModal } from "@/components/modals/SalesPerformanceModal";
 import { SalesDetailModal } from "@/components/modals/SalesDetailModal";
 import { LevelConfigurationModal } from "@/components/admin/LevelConfigurationModal";
 import { TemplateManagementModal } from "@/components/admin/TemplateManagementModal";
 import { MemberEditModal } from "@/components/admin/MemberEditModal";
 import { OrganizationalStructureEditor } from "@/components/admin/OrganizationalStructureEditor";
+import { Zap } from "lucide-react";
 
 const levelColors: Record<number, string> = {
   1: "bg-neon-blue/20 text-neon-blue border-neon-blue/30",
@@ -672,14 +674,29 @@ export default function AdminUsers() {
                         >
                           <td className="p-4">
                             <div className="flex items-center gap-3">
-                              <div className={cn(
-                                "w-10 h-10 rounded-full flex items-center justify-center font-semibold",
-                                levelColors[member.level]
-                              )}>
-                                {member.avatar}
+                              <div className="relative shrink-0">
+                                <div className={cn(
+                                  "w-10 h-10 rounded-full flex items-center justify-center font-semibold",
+                                  levelColors[member.level]
+                                )}>
+                                  {member.avatar}
+                                </div>
+                                {/* Freelance badge — vendedor externo */}
+                                {!neonEventsSellerIds.includes(member.id) && member.level <= 2 && (
+                                  <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-neon-blue/20 border border-neon-blue/60 flex items-center justify-center" title="Vendedor externo / Freelance">
+                                    <Zap className="w-2.5 h-2.5 text-neon-blue" />
+                                  </div>
+                                )}
                               </div>
                               <div>
-                                <p className="font-medium">{member.name}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{member.name}</p>
+                                  {!neonEventsSellerIds.includes(member.id) && member.level <= 2 && (
+                                    <Badge className="bg-neon-blue/10 text-neon-blue border-neon-blue/30 text-[10px] h-4">
+                                      Freelance
+                                    </Badge>
+                                  )}
+                                </div>
                                 <p className="text-sm text-muted-foreground font-mono">{member.id}</p>
                               </div>
                             </div>
