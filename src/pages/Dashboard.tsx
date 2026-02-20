@@ -18,6 +18,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InvitationsPanel } from "@/components/invitations/InvitationsPanel";
+import { pendingInvitations } from "@/data/globalSellerPool";
 import { 
   TicketIcon, 
   TrendingUp, 
@@ -33,7 +35,8 @@ import {
   Building2,
   ChevronRight,
   LayoutDashboard,
-  Flame
+  Flame,
+  Bell,
 } from "lucide-react";
 import { currentUsers, weeklyChartData, weeklyChartDataByEvent, events, organizationData, TeamMember } from "@/data/mockData";
 
@@ -85,7 +88,7 @@ export default function Dashboard() {
   const [selectedTeamMember, setSelectedTeamMember] = useState<TeamMember | null>(null);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [activeMainTab, setActiveMainTab] = useState<'dashboard' | 'events' | 'team'>('dashboard');
+  const [activeMainTab, setActiveMainTab] = useState<'dashboard' | 'events' | 'team' | 'invitations'>('dashboard');
   
   // Promotora selection state
   const [selectedPromotora, setSelectedPromotora] = useState<string | null>(null);
@@ -279,6 +282,15 @@ export default function Dashboard() {
                 Mi Equipo
               </TabsTrigger>
             )}
+            <TabsTrigger value="invitations" className="gap-2 relative">
+              <Bell className="w-4 h-4" />
+              Invitaciones
+              {pendingInvitations.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-yellow-400 text-[9px] font-bold text-black flex items-center justify-center">
+                  {pendingInvitations.length}
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -353,6 +365,11 @@ export default function Dashboard() {
               />
             </TabsContent>
           )}
+
+          {/* Invitations Tab */}
+          <TabsContent value="invitations" className="mt-6">
+            <InvitationsPanel />
+          </TabsContent>
         </Tabs>
       </div>
 
