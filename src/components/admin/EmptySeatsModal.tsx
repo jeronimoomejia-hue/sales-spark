@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle, Percent, DollarSign, MessageSquare, Megaphone, Ticket } from "lucide-react";
+import { AlertTriangle, Percent, DollarSign, MessageSquare, Megaphone, Ticket, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Event } from "@/data/mockData";
 
@@ -28,17 +27,17 @@ export function EmptySeatsModal({ open, onOpenChange, event, onActivate }: Empty
   const handleActivate = () => {
     onActivate(event.id, discountPercent, bonusCommission, message);
     toast.success("🚨 Alerta de Sillas Vacías activada", {
-      description: `Se notificará a todos los vendedores del evento. Descuento: ${discountPercent}% • Bonus: +$${bonusCommission.toLocaleString()}`,
+      description: `Se notificará a todos los vendedores. Descuento: ${discountPercent}% • Bonus: +$${bonusCommission.toLocaleString()}`,
     });
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto bg-card border-destructive/30">
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl text-destructive">
-            <AlertTriangle className="w-6 h-6 animate-pulse" />
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <AlertTriangle className="w-6 h-6 text-destructive" />
             Sillas Vacías — {event.name}
           </DialogTitle>
           <DialogDescription>
@@ -47,12 +46,12 @@ export function EmptySeatsModal({ open, onOpenChange, event, onActivate }: Empty
         </DialogHeader>
 
         <div className="space-y-5 mt-2">
-          {/* Remaining tickets info */}
-          <Card variant="glass" className="p-4 border-destructive/20 bg-destructive/5">
+          {/* Remaining tickets */}
+          <Card variant="glass" className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Ticket className="w-5 h-5 text-destructive" />
-                <span className="font-medium">Sillas sin vender</span>
+                <Ticket className="w-5 h-5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Sillas sin vender</span>
               </div>
               <span className="text-2xl font-bold text-destructive">{remainingTickets.toLocaleString()}</span>
             </div>
@@ -61,36 +60,40 @@ export function EmptySeatsModal({ open, onOpenChange, event, onActivate }: Empty
           {/* Discount Slider */}
           <div className="space-y-3">
             <label className="text-sm font-medium flex items-center gap-2">
-              <Percent className="w-4 h-4 text-warning" />
-              Descuento en boleta
+              <Percent className="w-4 h-4 text-primary" />
+              Descuento en boleta: <span className="text-primary font-bold">{discountPercent}%</span>
             </label>
-            <div className="flex items-center gap-4">
-              <Slider
-                value={[discountPercent]}
-                onValueChange={(v) => setDiscountPercent(v[0])}
-                min={5}
-                max={50}
-                step={5}
-                className="flex-1"
-              />
-              <Badge variant="secondary" className="text-lg font-bold min-w-[60px] justify-center">
-                {discountPercent}%
-              </Badge>
-            </div>
-            {/* Price preview */}
-            <div className="space-y-1.5 mt-2">
+            <Slider
+              value={[discountPercent]}
+              onValueChange={(v) => setDiscountPercent(v[0])}
+              min={5}
+              max={50}
+              step={5}
+            />
+          </div>
+
+          {/* Ticket price breakdown */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Precio con descuento</p>
+            <div className="rounded-xl border border-border overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-3 px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border bg-muted/30">
+                <span>Tipo</span>
+                <span className="text-right">Original</span>
+                <span></span>
+                <span className="text-right">Con Descuento</span>
+              </div>
               {event.ticketTypes.map((t) => {
                 const discounted = Math.round(t.price * (1 - discountPercent / 100));
+                const savings = t.price - discounted;
                 return (
-                  <div key={t.id} className="flex items-center justify-between text-sm px-3 py-1.5 rounded-lg bg-card-elevated">
+                  <div key={t.id} className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-3 px-4 py-3 border-b border-border last:border-0">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />
-                      <span>{t.name}</span>
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: t.color }} />
+                      <span className="text-sm font-medium">{t.name}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="line-through text-muted-foreground text-xs">${t.price.toLocaleString()}</span>
-                      <span className="font-bold text-success">${discounted.toLocaleString()}</span>
-                    </div>
+                    <span className="text-sm text-muted-foreground line-through">${t.price.toLocaleString()}</span>
+                    <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-sm font-bold text-success">${discounted.toLocaleString()}</span>
                   </div>
                 );
               })}
@@ -102,18 +105,42 @@ export function EmptySeatsModal({ open, onOpenChange, event, onActivate }: Empty
           {/* Bonus Commission */}
           <div className="space-y-2">
             <label className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-success" />
+              <DollarSign className="w-4 h-4 text-primary" />
               Comisión bonus extra por ticket (COP)
             </label>
             <Input
               type="number"
               value={bonusCommission}
               onChange={(e) => setBonusCommission(Number(e.target.value))}
-              className="text-lg font-bold"
             />
-            <p className="text-xs text-muted-foreground">
-              Ejemplo: Un vendedor Nv.1 ganará ${((event.commissionsByLevel[1] || 0) + bonusCommission).toLocaleString()} por ticket (${(event.commissionsByLevel[1] || 0).toLocaleString()} base + ${bonusCommission.toLocaleString()} bonus)
-            </p>
+          </div>
+
+          {/* Commission breakdown */}
+          <div className="rounded-xl border border-border overflow-hidden">
+            <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-3 px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border bg-muted/30">
+              <span>Nivel</span>
+              <span className="text-right">Base</span>
+              <span className="text-right">Bonus</span>
+              <span className="text-right">Total</span>
+            </div>
+            {[
+              { level: 1, name: "Común" },
+              { level: 2, name: "Cabeza" },
+              { level: 3, name: "Sub Socio" },
+              { level: 4, name: "Socio" },
+            ].map(({ level, name }) => {
+              const base = event.commissionsByLevel[level] || 0;
+              return (
+                <div key={level} className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-x-3 px-4 py-3 border-b border-border last:border-0">
+                  <span className="text-sm">
+                    <span className="text-muted-foreground">Nv.{level}</span> {name}
+                  </span>
+                  <span className="text-sm text-muted-foreground">${base.toLocaleString()}</span>
+                  <span className="text-sm text-success">+${bonusCommission.toLocaleString()}</span>
+                  <span className="text-sm font-bold">${(base + bonusCommission).toLocaleString()}</span>
+                </div>
+              );
+            })}
           </div>
 
           <Separator />
@@ -128,18 +155,17 @@ export function EmptySeatsModal({ open, onOpenChange, event, onActivate }: Empty
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={3}
-              placeholder="Escribe el mensaje que recibirán los vendedores..."
             />
           </div>
 
-          {/* Activate Button */}
+          {/* Activate Button — consistent style, no color change */}
           <Button
             onClick={handleActivate}
-            variant="destructive"
-            className="w-full gap-2 h-12 text-base animate-pulse"
+            variant="party"
+            className="w-full gap-2 h-12 text-base"
           >
             <Megaphone className="w-5 h-5" />
-            🚨 Activar Sillas Vacías y Notificar
+            Activar Sillas Vacías y Notificar
           </Button>
         </div>
       </DialogContent>
