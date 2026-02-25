@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -17,14 +17,22 @@ import {
   BarChart3,
   UserPlus,
   Copy,
-  TrendingUp
+  TrendingUp,
+  DollarSign,
 } from "lucide-react";
-import { events, Event } from "@/data/mockData";
+import { events as initialEvents, Event, TicketType } from "@/data/mockData";
 import { eventAssignments, getEventAssignment } from "@/data/eventTemplates";
+import { EventPricingModal } from "@/components/admin/EventPricingModal";
 
 export default function AdminEvents() {
   const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'upcoming' | 'closed'>('all');
+  const [events, setEvents] = useState(initialEvents);
+  const [pricingEvent, setPricingEvent] = useState<Event | null>(null);
+
+  const handleSavePricing = useCallback((eventId: string, ticketTypes: TicketType[], commissions: Record<number, number>) => {
+    setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ticketTypes, commissionsByLevel: commissions } : e));
+  }, []);
 
   const filteredEvents = events.filter(e => 
     selectedFilter === 'all' || e.status === selectedFilter
@@ -198,7 +206,7 @@ export default function AdminEvents() {
                     </div>
 
                     {/* Actions */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -217,6 +225,15 @@ export default function AdminEvents() {
                         <BarChart3 className="w-4 h-4" />
                         Estadísticas
                       </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-1 text-success border-success/30 hover:bg-success/10"
+                        onClick={() => setPricingEvent(event)}
+                      >
+                        <DollarSign className="w-4 h-4" />
+                        Precios
+                      </Button>
                     </div>
                   </div>
                 </Card>
@@ -225,6 +242,13 @@ export default function AdminEvents() {
           })}
         </div>
       </div>
+
+      <EventPricingModal
+        open={!!pricingEvent}
+        onOpenChange={(open) => !open && setPricingEvent(null)}
+        event={pricingEvent}
+        onSave={handleSavePricing}
+      />
     </DashboardLayout>
   );
 }
