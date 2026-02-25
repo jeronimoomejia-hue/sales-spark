@@ -61,6 +61,7 @@ export function AdminSidebar({ userLevel = 4 }: AdminSidebarProps) {
 
   // Event sub-menu items
   const eventSubMenu = [
+    { icon: LayoutDashboard, label: "Panel", path: "" },
     { icon: Users, label: "Alineación", path: "roster" },
     { icon: TicketIcon, label: "Ventas", path: "sales" },
     { icon: Target, label: "Hitos", path: "milestones" },
@@ -215,10 +216,13 @@ export function AdminSidebar({ userLevel = 4 }: AdminSidebarProps) {
                   {eventSubMenu.map((item) => (
                     <NavLink
                       key={item.path}
-                      to={`/admin/events/${event.id}/${item.path}`}
+                      to={item.path ? `/admin/events/${event.id}/${item.path}` : `/admin/events/${event.id}`}
+                      end={!item.path}
                       className={cn(
                         "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-xs",
-                        location.pathname === `/admin/events/${event.id}/${item.path}`
+                        (item.path 
+                          ? location.pathname === `/admin/events/${event.id}/${item.path}`
+                          : location.pathname === `/admin/events/${event.id}`)
                           ? "bg-primary/10 text-primary font-medium"
                           : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
                       )}
