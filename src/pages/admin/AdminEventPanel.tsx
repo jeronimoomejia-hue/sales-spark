@@ -26,12 +26,14 @@ import {
 import { events as initialEvents, Event, TicketType } from "@/data/mockData";
 import { getEventAssignment } from "@/data/eventTemplates";
 import { EventPricingModal } from "@/components/admin/EventPricingModal";
+import { EmptySeatsModal } from "@/components/admin/EmptySeatsModal";
 
 export default function AdminEventPanel() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const [events, setEvents] = useState(initialEvents);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showEmptySeatsModal, setShowEmptySeatsModal] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
   const event = events.find(e => e.id === eventId);
@@ -40,6 +42,13 @@ export default function AdminEventPanel() {
 
   const handleSavePricing = useCallback((id: string, ticketTypes: TicketType[], commissions: Record<number, number>) => {
     setEvents(prev => prev.map(e => e.id === id ? { ...e, ticketTypes, commissionsByLevel: commissions } : e));
+  }, []);
+
+  const handleActivateEmptySeats = useCallback((id: string, discountPercent: number, bonusCommission: number, message: string) => {
+    setEvents(prev => prev.map(e => e.id === id ? {
+      ...e,
+      emptySeatsAlert: { isActive: true, discountPercent, bonusCommission, message }
+    } : e));
   }, []);
 
   const handleDeactivateEmptySeats = useCallback(() => {
@@ -200,7 +209,7 @@ export default function AdminEventPanel() {
           <Button 
             variant={event.emptySeatsAlert?.isActive ? "destructive" : "outline"}
             className={`gap-2 h-14 flex-col ${!event.emptySeatsAlert?.isActive ? 'text-destructive border-destructive/30 hover:bg-destructive/10' : ''}`}
-            onClick={handleDeactivateEmptySeats}
+            onClick={() => event.emptySeatsAlert?.isActive ? handleDeactivateEmptySeats() : setShowEmptySeatsModal(true)}
           >
             <AlertTriangle className={`w-5 h-5 ${event.emptySeatsAlert?.isActive ? 'animate-pulse' : ''}`} />
             <span className="text-xs">{event.emptySeatsAlert?.isActive ? 'Desactivar Alerta' : 'Sillas Vacías'}</span>
@@ -382,6 +391,13 @@ export default function AdminEventPanel() {
         onOpenChange={setShowPricingModal}
         event={event}
         onSave={handleSavePricing}
+      />
+
+      <EmptySeatsModal
+        open={showEmptySeatsModal}
+        onOpenChange={setShowEmptySeatsModal}
+        event={event}
+        onActivate={handleActivateEmptySeats}
       />
 
     </DashboardLayout>
