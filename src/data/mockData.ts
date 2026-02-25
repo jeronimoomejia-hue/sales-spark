@@ -1,6 +1,21 @@
 // Mock data with hierarchical sales aggregation and event segmentation
 // Sales from subordinates accumulate to superiors in the org hierarchy
 
+export interface TicketType {
+  id: string;
+  name: string;
+  price: number;
+  available: number;
+  color: string;
+}
+
+export interface EmptySeatsAlert {
+  isActive: boolean;
+  discountPercent: number;
+  bonusCommission: number;
+  message: string;
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -8,8 +23,11 @@ export interface Event {
   venue: string;
   status: 'active' | 'upcoming' | 'closed';
   ticketPrice: number;
+  ticketTypes: TicketType[];
+  commissionsByLevel: Record<number, number>;
   totalCapacity: number;
   soldTickets: number;
+  emptySeatsAlert?: EmptySeatsAlert;
 }
 
 export interface Sale {
@@ -67,8 +85,15 @@ export const events: Event[] = [
     venue: 'Parque Simón Bolívar',
     status: 'active',
     ticketPrice: 40000,
+    ticketTypes: [
+      { id: 'tt-1a', name: 'General', price: 40000, available: 8000, color: 'hsl(var(--primary))' },
+      { id: 'tt-1b', name: 'VIP', price: 80000, available: 4000, color: 'hsl(var(--warning))' },
+      { id: 'tt-1c', name: 'Palco', price: 150000, available: 3000, color: 'hsl(var(--accent))' },
+    ],
+    commissionsByLevel: { 1: 7500, 2: 10000, 3: 15000, 4: 17500 },
     totalCapacity: 15000,
-    soldTickets: 8456
+    soldTickets: 8456,
+    emptySeatsAlert: { isActive: false, discountPercent: 0, bonusCommission: 0, message: '' },
   },
   {
     id: 'evt-2',
@@ -77,8 +102,15 @@ export const events: Event[] = [
     venue: 'Movistar Arena',
     status: 'active',
     ticketPrice: 45000,
+    ticketTypes: [
+      { id: 'tt-2a', name: 'General', price: 45000, available: 5000, color: 'hsl(var(--primary))' },
+      { id: 'tt-2b', name: 'VIP', price: 90000, available: 2000, color: 'hsl(var(--warning))' },
+      { id: 'tt-2c', name: 'Palco', price: 160000, available: 1000, color: 'hsl(var(--accent))' },
+    ],
+    commissionsByLevel: { 1: 8000, 2: 11000, 3: 16000, 4: 18000 },
     totalCapacity: 8000,
-    soldTickets: 3245
+    soldTickets: 3245,
+    emptySeatsAlert: { isActive: false, discountPercent: 0, bonusCommission: 0, message: '' },
   },
   {
     id: 'evt-3',
@@ -87,8 +119,15 @@ export const events: Event[] = [
     venue: 'La 33',
     status: 'upcoming',
     ticketPrice: 35000,
+    ticketTypes: [
+      { id: 'tt-3a', name: 'General', price: 35000, available: 3000, color: 'hsl(var(--primary))' },
+      { id: 'tt-3b', name: 'VIP', price: 70000, available: 1500, color: 'hsl(var(--warning))' },
+      { id: 'tt-3c', name: 'Palco', price: 120000, available: 500, color: 'hsl(var(--accent))' },
+    ],
+    commissionsByLevel: { 1: 6500, 2: 9000, 3: 13000, 4: 15000 },
     totalCapacity: 5000,
-    soldTickets: 757
+    soldTickets: 757,
+    emptySeatsAlert: { isActive: false, discountPercent: 0, bonusCommission: 0, message: '' },
   }
 ];
 

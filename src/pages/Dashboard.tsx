@@ -124,7 +124,12 @@ export default function Dashboard() {
   const getEventData = () => {
     const ownSales = user.ownSales || { week: 0, month: 0, today: 0, total: 0 };
     const teamSales = 'teamSales' in user ? user.teamSales : { week: 0, month: 0, today: 0, total: 0 };
-    const commission = user.commissionPerTicket || 7500;
+    
+    // Use dynamic commission from event's commissionsByLevel based on user level
+    const selectedEvt = selectedEventId !== 'all' ? events.find(e => e.id === selectedEventId) : null;
+    const commission = selectedEvt 
+      ? (selectedEvt.commissionsByLevel[userLevel] || user.commissionPerTicket)
+      : user.commissionPerTicket;
 
     if (selectedEventId === 'all') {
       return {
@@ -138,6 +143,7 @@ export default function Dashboard() {
         teamSalesTotal: teamSales.total || teamSales.month * 3,
         commissionWeek: ownSales.week * commission,
         commissionMonth: ownSales.month * commission,
+        commission,
         chartData: weeklyChartData.map(d => ({
           name: d.week,
           ventas: d.ownSales + (hasTeam ? d.teamSales : 0),
@@ -160,6 +166,7 @@ export default function Dashboard() {
       teamSalesTotal: (teamSales.month || 0) * 2,
       commissionWeek: Math.floor(eventSalesData.ownCommission * 0.3),
       commissionMonth: eventSalesData.ownCommission,
+      commission,
       chartData: eventChartData.map(d => ({
         name: d.week,
         ventas: d.ownSales + (hasTeam ? d.teamSales : 0),
@@ -311,7 +318,7 @@ export default function Dashboard() {
                 month: eventData.teamSalesMonth,
                 total: eventData.teamSalesTotal,
               } : undefined}
-              commissionPerTicket={user.commissionPerTicket}
+              commissionPerTicket={eventData.commission || user.commissionPerTicket}
               teamSize={teamMembers?.length || 0}
               onViewMore={() => setShowPerformanceModal(true)}
             />

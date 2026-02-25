@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { events as mockEvents } from "@/data/mockData";
+import { PaymentLinkPreview } from "@/components/dashboard/PaymentLinkPreview";
 
 interface EventSegmentedViewProps {
   userLevel: 1 | 2 | 3 | 4;
@@ -54,7 +55,7 @@ const getEventData = (userLevel: number): EventCardData[] => {
     ownSales: Math.floor(Math.random() * 50) + 10,
     teamSales: userLevel >= 2 ? Math.floor(Math.random() * 150) + 50 : 0,
     goal: userLevel === 1 ? 30 : userLevel === 2 ? 80 : userLevel === 3 ? 150 : 300,
-    commission: (Math.floor(Math.random() * 50) + 10) * (userLevel === 1 ? 7500 : userLevel === 2 ? 10000 : 12000),
+    commission: (Math.floor(Math.random() * 50) + 10) * (event.commissionsByLevel[userLevel] || 7500),
     status: index === 0 ? 'active' : index === 1 ? 'active' : 'upcoming',
     daysLeft: Math.floor(Math.random() * 15) + 1,
     ranking: Math.floor(Math.random() * 20) + 1,
@@ -232,8 +233,32 @@ export function EventSegmentedView({
                     />
                   </div>
 
+                  {/* Ticket Types Mini Table */}
+                  <div className="mb-3 space-y-1">
+                    <p className="text-xs text-muted-foreground font-medium mb-1">Precios de boleta:</p>
+                    {mockEvents.find(e => e.id === event.id)?.ticketTypes.map((t) => (
+                      <div key={t.id} className="flex items-center justify-between text-xs px-2 py-1 rounded bg-card-elevated">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />
+                          <span>{t.name}</span>
+                        </div>
+                        <span className="font-semibold">${t.price.toLocaleString()}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-1 text-xs text-primary mt-1">
+                      <DollarSign className="w-3 h-3" />
+                      <span>Mi comisión: ${(mockEvents.find(e => e.id === event.id)?.commissionsByLevel[userLevel] || 0).toLocaleString()}/ticket</span>
+                    </div>
+                  </div>
+
+                  {/* Payment Link Preview */}
+                  <PaymentLinkPreview
+                    event={mockEvents.find(e => e.id === event.id)!}
+                    sellerId="promo-1"
+                  />
+
                   {/* Footer */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-xs">
                         <Trophy className="w-3 h-3 mr-1" />
