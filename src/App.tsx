@@ -26,6 +26,7 @@ import AdminEventSales from "./pages/admin/AdminEventSales";
 import AdminEventMilestones from "./pages/admin/AdminEventMilestones";
 import AdminEventClosures from "./pages/admin/AdminEventClosures";
 import AdminEventReports from "./pages/admin/AdminEventReports";
+import AdminEventPanel from "./pages/admin/AdminEventPanel";
 import AdminTemplates from "./pages/admin/AdminTemplates";
 import AdminSellerRegistrations from "./pages/admin/AdminSellerRegistrations";
 import NotFound from "./pages/NotFound";
@@ -66,6 +67,7 @@ const App = () => (
           
           {/* Admin Event-Specific Routes */}
           <Route path="/admin/events" element={<AdminEvents />} />
+          <Route path="/admin/events/:eventId" element={<AdminEventPanel />} />
           <Route path="/admin/events/:eventId/roster" element={<AdminEventRoster />} />
           <Route path="/admin/events/:eventId/sales" element={<AdminEventSales />} />
           <Route path="/admin/events/:eventId/milestones" element={<AdminEventMilestones />} />
