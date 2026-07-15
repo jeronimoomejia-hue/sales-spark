@@ -24,7 +24,7 @@ export function DashboardLayout({
   const isAdmin = userLevel === 4;
   
   return (
-    <div className="min-h-screen crews-mode relative bg-background text-foreground">
+    <div className="min-h-screen crews-mode relative text-foreground">
       <CrewsGlassBackground variant="full" className="fixed" />
       {isAdmin ? (
         <AdminSidebar userLevel={userLevel} />
