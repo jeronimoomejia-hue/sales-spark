@@ -71,11 +71,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden crews-mode">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-primary/20 via-transparent to-transparent opacity-50 animate-pulse" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-accent/20 via-transparent to-transparent opacity-50 animate-pulse" style={{ animationDelay: "1s" }} />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden crews-mode">
+      <CrewsGlassBackground variant="full" />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="w-full max-w-lg relative z-10">
