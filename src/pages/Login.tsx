@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CrewsGlassBackground } from "@/components/ui/CrewsGlassBackground";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Users, Crown, Shield, User } from "lucide-react";
@@ -36,12 +37,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-primary/20 via-transparent to-transparent opacity-50 animate-pulse" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-accent/20 via-transparent to-transparent opacity-50 animate-pulse" style={{ animationDelay: "1s" }} />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden crews-mode">
+      <CrewsGlassBackground variant="full" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

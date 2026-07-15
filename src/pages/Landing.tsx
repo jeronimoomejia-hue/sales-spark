@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { CrewsGlassBackground } from "@/components/ui/CrewsGlassBackground";
 import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -126,11 +127,8 @@ export default function Landing() {
       </header>
 
       {/* SECTION 1 — HERO DUAL */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-neon-purple/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-neon-pink/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-        </div>
+      <section className="relative min-h-screen flex items-center justify-center px-4 pt-20 overflow-hidden">
+        <CrewsGlassBackground variant="hero" />
 
         <div className="relative z-10 text-center max-w-5xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
