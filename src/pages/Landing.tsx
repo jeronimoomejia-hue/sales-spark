@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { CrewsGlassBackground } from "@/components/ui/CrewsGlassBackground";
 import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";

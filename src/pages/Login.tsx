@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CrewsGlassBackground } from "@/components/ui/CrewsGlassBackground";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Users, Crown, Shield, User } from "lucide-react";
