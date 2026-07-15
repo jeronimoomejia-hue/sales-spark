@@ -310,6 +310,15 @@
     50% { transform: translateY(-10px); }
   }
 
+  @keyframes glass-float {
+    0%, 100% {
+      transform: translate(-50%, -50%) translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translate(-50%, -50%) translateY(-14px) rotate(0.4deg);
+    }
+  }
+
   /* Shimmer effect */
   .shimmer {
     background: linear-gradient(
