@@ -93,26 +93,79 @@
     --sidebar-ring: 24 95% 53%;
   }
 
-  /* Crews Dark Mode (for Crews section) */
+  /* Crews Dark / Glass Mode — refracted palette
+     Aligned to CrewsGlassBackground (orange → purple → pink → cyan/blue). */
   .crews-mode {
     --background: 240 15% 4%;
-    --foreground: 0 0% 100%;
-    --card: 240 12% 8%;
-    --card-foreground: 0 0% 100%;
-    --card-elevated: 240 10% 12%;
-    --popover: 240 12% 8%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 270 91% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 10% 16%;
-    --secondary-foreground: 240 5% 70%;
-    --muted: 240 8% 14%;
-    --muted-foreground: 240 5% 55%;
-    --accent: 330 85% 60%;
+    --foreground: 0 0% 98%;
+    --card: 240 20% 10%;
+    --card-foreground: 0 0% 98%;
+    --card-elevated: 240 18% 14%;
+    --popover: 240 22% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary = CREWS orange (matches orb rim) */
+    --primary: 24 95% 58%;
+    --primary-foreground: 240 15% 6%;
+
+    --secondary: 240 15% 16%;
+    --secondary-foreground: 0 0% 92%;
+
+    --muted: 240 12% 14%;
+    --muted-foreground: 240 8% 68%;
+
+    /* Accent = neon purple/pink (orb refraction mid) */
+    --accent: 300 90% 68%;
     --accent-foreground: 0 0% 100%;
-    --border: 240 8% 18%;
-    --input: 240 8% 18%;
-    --ring: 270 91% 65%;
+
+    --border: 240 20% 22%;
+    --input: 240 20% 18%;
+    --ring: 24 95% 58%;
+
+    /* Refracted neon accents — desaturate and lift into iridescent range */
+    --neon-purple: 268 88% 72%;
+    --neon-pink: 322 90% 70%;
+    --neon-blue: 205 95% 68%;
+    --neon-green: 165 80% 55%;
+    --neon-yellow: 40 100% 68%;
+    --neon-orange: 24 100% 62%;
+
+    --success: 165 75% 48%;
+    --success-foreground: 240 15% 6%;
+    --warning: 40 100% 62%;
+    --warning-foreground: 240 15% 6%;
+    --info: 205 95% 62%;
+    --info-foreground: 240 15% 6%;
+
+    /* Glass-aligned gradients */
+    --gradient-crews-brand: linear-gradient(135deg, hsl(24 95% 58%) 0%, hsl(300 90% 68%) 100%);
+    --gradient-party: linear-gradient(135deg, hsl(24 95% 58%) 0%, hsl(300 90% 68%) 45%, hsl(205 95% 68%) 100%);
+    --gradient-crews: linear-gradient(135deg, hsl(268 88% 72%) 0%, hsl(322 90% 70%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(165 75% 48%) 0%, hsl(205 95% 68%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(40 100% 68%) 0%, hsl(24 95% 58%) 100%);
+    --gradient-cta: linear-gradient(135deg, hsl(24 95% 58%) 0%, hsl(268 88% 72%) 60%, hsl(322 90% 70%) 100%);
+
+    --shadow-glow-orange: 0 0 24px hsl(24 95% 58% / 0.35), 0 0 60px hsl(24 95% 58% / 0.15);
+    --shadow-glow-purple: 0 0 24px hsl(268 88% 72% / 0.35), 0 0 60px hsl(268 88% 72% / 0.15);
+    --shadow-glow-pink: 0 0 24px hsl(322 90% 70% / 0.35), 0 0 60px hsl(322 90% 70% / 0.15);
+    --shadow-glow-success: 0 0 24px hsl(165 75% 48% / 0.35);
+
+    color-scheme: dark;
+  }
+
+  /* Inside crews-mode: cards become translucent glass so they blend with the orb */
+  .crews-mode .glass,
+  .crews-mode .glass-elevated {
+    background-color: hsl(240 22% 10% / 0.55);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+  }
+  .crews-mode .glass-dark {
+    background-color: hsl(240 25% 6% / 0.7);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid hsl(0 0% 100% / 0.06);
   }
 }
 
