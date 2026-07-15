@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import { AdminSidebar } from "./AdminSidebar";
 import { Header } from "./Header";
+import { CrewsGlassBackground } from "@/components/ui/CrewsGlassBackground";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -23,7 +24,8 @@ export function DashboardLayout({
   const isAdmin = userLevel === 4;
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen crews-mode relative bg-background text-foreground">
+      <CrewsGlassBackground variant="full" className="fixed" />
       {isAdmin ? (
         <AdminSidebar userLevel={userLevel} />
       ) : (
